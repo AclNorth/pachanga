@@ -95,7 +95,7 @@
             <ul id="lista-suplentes"></ul>
             <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; border: 1px dashed var(--admin-color); display:none;"></div>
         </div>
-        <!-- 4. PANEL DE CONTROL -->
+                <!-- 4. PANEL DE CONTROL -->
         <div style="margin-bottom: 30px;">
             <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederAdmin()">🔑 Panel de Administración Oculto</button>
             <div id="panel-secreto" class="admin-zone">
@@ -126,16 +126,24 @@
         const MASTER_KEY = "$2a$10$eR95QU2W1ABCYF1R.Nwo4O2GGpaC9vRa3/O53eetHBpLwZtR/2oVe";
         const URL_API = `https://jsonbin.io{BIN_ID}`;
 
-        let baseDatos = { partido: {}, jugadores: [] };
+        let baseDatos = { 
+            partido: { fecha: "Por definir", hora: "00:00", campo: "Por definir", precio: "0", limite: 16, equipos: "" }, 
+            jugadores: [] 
+        };
         let isAdmin = false;
 
         document.addEventListener("DOMContentLoaded", descargarDatos);
 
         async function descargarDatos() {
             try {
-                const res = await fetch(`${URL_API}/latest`, { headers: { "X-Master-Key": MASTER_KEY } });
+                const res = await fetch(`${URL_API}/latest`, { 
+                    method: "GET",
+                    headers: { "X-Master-Key": MASTER_KEY } 
+                });
                 const json = await res.json();
-                baseDatos = json.record;
+                if (json.record && json.record.partido) {
+                    baseDatos = json.record;
+                }
                 renderizarTodo();
             } catch (e) {
                 console.error("Error al descargar datos:", e);
@@ -144,21 +152,30 @@
 
         async function subirDatos() {
             try {
-                await fetch(URL_API, { method: "PUT", headers: { "Content-Type": "application/json", "X-Master-Key": MASTER_KEY }, body: JSON.stringify(baseDatos) });
+                const res = await fetch(URL_API, { 
+                    method: "PUT", 
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "X-Master-Key": MASTER_KEY,
+                        "X-Bin-Private": "false"
+                    }, 
+                    body: JSON.stringify(baseDatos) 
+                });
+                if (!res.ok) throw new Error("Fallo en la nube");
                 renderizarTodo();
             } catch (e) {
                 console.error("Error al subir datos:", e);
             }
         }
         function renderizarTodo() {
-            const p = baseDatos.partido;
+            const p = baseDatos.partido || { fecha: "Por definir", hora: "00:00", campo: "Por definir", precio: "0", limite: 16, equipos: "" };
             document.getElementById('disp-fecha').innerText = p.fecha || "-";
             document.getElementById('disp-hora').innerText = p.hora || "-";
             document.getElementById('disp-campo').innerText = p.campo || "-";
             document.getElementById('disp-precio').innerText = p.precio ? p.precio + "€" : "-";
 
             const limite = parseInt(p.limite) || 16;
-            const libres = Math.max(0, limite - baseDatos.jugadores.length);
+            const libres = Math.max(0, limite - (baseDatos.jugadores ? baseDatos.jugadores.length : 0));
             const status = document.getElementById('plazas-status');
             status.innerText = libres > 0 ? `🟢 ¡Quedan ${libres} plazas disponibles!` : `⚠️ ¡Cupo lleno! Lista de espera activa.`;
             status.className = libres > 0 ? "counter-badge" : "counter-badge counter-full";
@@ -167,23 +184,27 @@
             tUL.innerHTML = ""; sUL.innerHTML = "";
             let rec = 0, pend = 0;
 
-            baseDatos.jugadores.forEach((j, i) => {
-                const esTitular = (i < limite);
-                const li = document.createElement('li');
-                li.className = esTitular ? "titular-row" : "suplente-row";
-                li.innerHTML = `<span><strong>${i+1}. ${j.nombre}</strong></span><span>${j.pagado ? '✅ Pagado' : '⏳ Pendiente'}</span>`;
-                if(esTitular) { tUL.appendChild(li); if(j.pagado) rec += parseFloat(p.precio)||0; else pend += parseFloat(p.precio)||0; } 
-                else { sUL.appendChild(li); }
-            });
+            if (baseDatos.jugadores) {
+                baseDatos.jugadores.forEach((j, i) => {
+                    const esTitular = (i < limite);
+                    const li = document.createElement('li');
+                    li.className = esTitular ? "titular-row" : "suplente-row";
+                    li.innerHTML = `<span><strong>${i+1}. ${j.nombre}</strong></span><span>${j.pagado ? '✅ Pagado' : '⏳ Pendiente'}</span>`;
+                    if(esTitular) { tUL.appendChild(li); if(j.pagado) rec += parseFloat(p.precio)||0; else pend += parseFloat(p.precio)||0; } 
+                    else { sUL.appendChild(li); }
+                });
+            }
 
             document.getElementById('caja-rec').innerText = rec + "€"; document.getElementById('caja-pend').innerText = pend + "€";
 
             const adminUL = document.getElementById('admin-lista-jugadores'); adminUL.innerHTML = "";
-            baseDatos.jugadores.forEach((j, i) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${j.nombre}</span><div><input type="checkbox" ${j.pagado?'checked':''} onchange="marcarPago(${i}, this.checked)"> <button onclick="borrarJugador(${i})" style="background:var(--danger); color:white; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">X</button></div>`;
-                adminUL.appendChild(li);
-            });
+            if (baseDatos.jugadores) {
+                baseDatos.jugadores.forEach((j, i) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${j.nombre}</span><div><input type="checkbox" ${j.pagado?'checked':''} onchange="marcarPago(${i}, this.checked)"> <button onclick="borrarJugador(${i})" style="background:var(--danger); color:white; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">X</button></div>`;
+                    adminUL.appendChild(li);
+                });
+            }
 
             const box = document.getElementById('resultado-equipos');
             if(p.equipos) { box.style.display = 'block'; box.innerHTML = p.equipos; } else { box.style.display = 'none'; }
@@ -192,6 +213,7 @@
         function inscribirJugador() {
             const inp = document.getElementById('nombre-jugador-nuevo'); const n = inp.value.trim();
             if(!n) return alert("Escribe tu nombre");
+            if(!baseDatos.jugadores) baseDatos.jugadores = [];
             if(baseDatos.jugadores.some(j => j.nombre.toLowerCase() === n.toLowerCase())) return alert("Ya estás en la lista");
             baseDatos.jugadores.push({ nombre: n, pagado: false }); inp.value = ""; subirDatos();
         }
@@ -220,11 +242,14 @@
 
         function copiarWhatsApp() {
             const p = baseDatos.partido; let t = `⚽ *PACHANGA* ⚽\n📅 *Día:* ${p.fecha}\n⏰ *Hora:* ${p.hora}\n🏟️ *Campo:* ${p.campo}\n💵 *Precio:* ${p.precio}€\n\n🟢 *TITULARES:*\n`;
-            baseDatos.jugadores.forEach((j, i) => { if(i < p.limite) t += `${i+1}. ${j.nombre} ${j.pagado ? '[✅]' : '[⏳]'}\n`; });
+            if (baseDatos.jugadores) {
+                baseDatos.jugadores.forEach((j, i) => { if(i < p.limite) t += `${i+1}. ${j.nombre} ${j.pagado ? '[✅]' : '[⏳]'}\n`; });
+            }
             navigator.clipboard.writeText(t); alert("¡Copiado!");
         }
 
         function sortearEquipos() {
+            if (!baseDatos.jugadores) return alert("Faltan jugadores");
             let t = baseDatos.jugadores.slice(0, baseDatos.partido.limite).map(j => j.nombre);
             if(t.length < 2) return alert("Faltan jugadores");
             t.sort(() => Math.random() - 0.5); const m = Math.ceil(t.length / 2);
@@ -236,3 +261,4 @@
     </script>
 </body>
 </html>
+

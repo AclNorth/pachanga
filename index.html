@@ -195,11 +195,11 @@
             </div>
         </div>
     </div> <!-- Cierre de container -->
-          <!-- CARGA EL SDK OFICIAL DE SUPABASE -->
+              <!-- CARGA EL SDK OFICIAL COMPLETO DE SUPABASE -->
     <script src="https://jsdelivr.net"></script>
     <script>
         // CREDENCIALES COMPROBADAS DE TU PROYECTO 'alinvnvzssapljnbcxzx'
-        const SUPABASE_URL = "https://supabase.co"; 
+        const SUPABASE_URL = "https://alinvnvzssapljnbcxzx.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_pS0eNKhfqJgViI-SDXXuIw_2fSqgst4"; 
         
         // Inicialización segura utilizando el objeto window para evitar bloqueos del navegador
@@ -226,25 +226,29 @@
         });
 
         async function cargarDatosDesdeSupabase() {
-            const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
-            if (partido) {
-                partidoInfo = {
-                    fechaTexto: partido.fecha,
-                    horaTexto: partido.hora,
-                    campo: partido.campo,
-                    precio: partido.precio,
-                    limite: partido.limite,
-                    equiposGuardadosHTML: partido.equipos // Mapeado exacto según tu columna 'equipos'
-                };
-            }
+            try {
+                const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
+                if (partido) {
+                    partidoInfo = {
+                        fechaTexto: partido.fecha,
+                        horaTexto: partido.hora,
+                        campo: partido.campo,
+                        precio: partido.precio,
+                        limite: partido.limite,
+                        equiposGuardadosHTML: partido.equipos // Mapeado exacto según tu columna 'equipos'
+                    };
+                }
 
-            // Descargamos los jugadores ordenados cronológicamente por tu columna 'created_at'
-            const { data: jugadores } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
-            if (jugadores) {
-                listaJugadores = jugadores;
-            }
+                // Descargamos los jugadores ordenados cronológicamente por tu columna 'created_at'
+                const { data: jugadores } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
+                if (jugadores) {
+                    listaJugadores = jugadores;
+                }
 
-            renderizarTodo();
+                renderizarTodo();
+            } catch (err) {
+                console.error("Error al cargar datos:", err);
+            }
         }
 
         function conectarCanalRealtime() {
@@ -320,6 +324,7 @@
                 
                 if (esTitular) tUL.appendChild(li); else sUL.appendChild(li);
             });
+
 
             // ACTUALIZACIÓN DE CONTADORES DE LA CAJA ADMINISTRATIVA
             document.getElementById('caja-recaudado').innerText = totalRecaudado.toFixed(2) + "€";

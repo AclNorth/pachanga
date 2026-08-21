@@ -133,7 +133,7 @@
             <div class="list-title" id="titulo-titulares">👥 Convocados Titulares</div>
             <ul id="lista-titulares"></ul>
 
-            <div class="list-title" id="titulo-suplentes" style="color: var(--warning);">⏳ Lista de Espera</div>
+            <div class="list-title" id="titulo-suplentes" style="color: var(--warning);">⏳ Lista de Reserva (Suplentes)</div>
             <ul id="lista-suplentes"></ul>
 
             <!-- NUEVO: El resultado de los equipos ahora saldrá aquí arriba, para todo el mundo -->
@@ -197,71 +197,41 @@
         </div>
     </div>
 
-        <!-- Inyectamos la librería oficial de Supabase para conectar la web a internet -->
-    <script src="https://jsdelivr.net"></script>
-
-    <script>
-        // CONFIGURACIÓN CENTRAL DE LA NUBE: Pega tu clave anon real entre las comillas
-        const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsaW52bnZ6c3NhcGxqbmNieHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjkxNTcsImV4cCI6MjEwMjg0NTE1N30.O0QCRnyZzrNWXH8Lio7Edqe_9_OshubHM_TlwnvAwMc";
-
-        // Conexión activa con el servidor central de Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // CONTRASEÑA PRIVADA DE TU PANEL OCULTO
+<script>
+        // CONTRASEÑA: Cambia "admin123" por la clave que tú quieras usar en tu móvil
         const PASSWORD_CORRECTA = "klk830"; 
+        
         let isAdminAutenticado = false;
 
-        // Variables de datos en vivo (se sincronizan con internet)
-        let partidoInfo = { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
-        let listaJugadores = [];
+        // Carga la información guardada o inicia limpia con 16 jugadores de fábrica
+        let partidoInfo = JSON.parse(localStorage.getItem('partidoInfo')) || {
+            fechaTexto: "", 
+            horaTexto: "", 
+            campo: "", 
+            precio: "",
+            limite: 16,
+            equiposGuardadosHTML: "" // NUEVO: Guarda el sorteo para que no se borre nunca
+        };
 
-        // 1. CARGA INICIAL: Lee los datos de internet en cuanto alguien abre la web
-        async function cargarDatosDeInternet() {
-            try {
-                // Leer información del partido
-                const { data: partidoData } = await supabase.from('partido').select('*').limit(1);
-                if (partidoData && partidoData.length > 0) {
-                    const p = partidoData[0];
-                    partidoInfo = {
-                        fechaTexto: p.fecha || "",
-                        horaTexto: p.hora || "",
-                        campo: p.campo || "",
-                        precio: p.precio || "",
-                        limite: parseInt(p.limite) || 16,
-                        equiposGuardadosHTML: p.equipos || ""
-                    };
-                } else {
-                    // Si la tabla está vacía en internet, creamos el primer registro de fábrica
-                    await supabase.from('partido').insert([{ id: 1, limite: 16 }]);
-                }
+        let listaJugadores = JSON.parse(localStorage.getItem('listaJugadores')) || [];
 
-                // Leer lista de jugadores apuntados (ordenados por fecha de inscripción)
-                const { data: jugadoresData } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
-                if (jugadoresData) {
-                    listaJugadores = jugadoresData.map(j => ({ id: j.id, nombre: j.nombre, pagado: j.pagado }));
-                }
-
-                renderizarTodo();
-            } catch (err) {
-                console.error("Error cargando datos:", err);
-            }
+        function salvarMemoria() {
+            localStorage.setItem('partidoInfo', JSON.stringify(partidoInfo));
+            localStorage.setItem('listaJugadores', JSON.stringify(listaJugadores));
         }
-        // 2. DIBUJAR PANTALLA: Pinta los datos compartidos en los móviles de todos
+
         function renderizarTodo() {
-            // Render de la información pública en la tarjeta principal
+            // Render info partido en la pantalla principal
             document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
             document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
             document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
             document.getElementById('disp-precio').innerText = partidoInfo.precio || "-";
 
-            // Rellenar las casillas del administrador al abrir su panel oculto
+            // Inputs del admin (rellena los cuadros al abrir el panel)
             document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
             document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
             document.getElementById('inp-campo').value = partidoInfo.campo || "";
-            document.getElementById('inp-precio-publico').value = partidoInfo.precio || "";
-            document.getElementById('inp-precio-calculo').value = partidoInfo.precioCalculo || 5;
-            document.getElementById('inp-coste-pista').value = partidoInfo.precioTotalPista || 60;
+            document.getElementById('inp-precio').value = partidoInfo.precio || "";
             document.getElementById('inp-limite').value = partidoInfo.limite || 16;
 
             const maxRef = parseInt(partidoInfo.limite) || 16;
@@ -315,7 +285,6 @@
                 if (esTitular) tUL.appendChild(li); else sUL.appendChild(li);
             });
 
-            // Actualización de los datos de la caja de administración
             document.getElementById('caja-recaudado').innerText = totalRecaudado.toFixed(2) + "€";
             document.getElementById('caja-pendiente').innerText = totalPendiente.toFixed(2) + "€";
             document.getElementById('caja-total').innerText = (totalRecaudado + totalPendiente).toFixed(2) + "€";
@@ -330,13 +299,13 @@
                         <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">¿Pagó? 
                             <input type="checkbox" class="chk-pay" ${j.pagado ? 'checked':''} onchange="togglePago(${i})">
                         </label>
-                        <button class="btn-del" onclick="eliminarJugadorForzoso(${i})">Borrar</button>
+                        <button class="btn-del" onclick="eliminarJugadorForzoso(${i})">Borrar Jugador</button>
                     </div>
                 `;
                 adminUL.appendChild(li);
             });
 
-            // Cargar la pizarra Blanco y Negro guardada en internet
+            // NUEVO: Muestra los equipos guardados al cargar la página
             const box = document.getElementById('resultado-equipos');
             if (partidoInfo.equiposGuardadosHTML) {
                 box.style.display = 'block';
@@ -345,8 +314,8 @@
                 box.style.display = 'none';
             }
         }
-        // 3. ACCIONES DE JUGADORES: Envía las inscripciones volando a internet
-        async function inscribirJugadorAutomatico() {
+
+        function inscribirJugadorAutomatico() {
             const inputNombre = document.getElementById('nombre-jugador-nuevo');
             const nombre = inputNombre.value.trim();
 
@@ -361,16 +330,13 @@
                 return;
             }
 
-            // Subir el nuevo jugador al servidor central en internet
-            await supabase.from('jugadores').insert([{ nombre: nombre, pagado: false }]);
+            listaJugadores.push({ nombre: nombre, pagado: false });
+            salvarMemoria();
+            renderizarTodo();
             inputNombre.value = "";
-            
-            // Recargar para que todo el mundo vea el cambio
-            await cargarDatosDeInternet();
             alert(`⚽ ¡Perfecto ${nombre}! Te has apuntado correctamente.`);
         }
 
-        // 4. ACCIONES DE ADMINISTRADOR: Control privado del partido en la nube
         function accederPanelAdmin() {
             if (isAdminAutenticado) {
                 document.getElementById('panel-secreto').style.display = 'none';
@@ -390,69 +356,75 @@
             }
         }
 
-        async function actualizarPartido() {
-            const fecha = document.getElementById('inp-fecha-texto').value;
-            const hora = document.getElementById('inp-hora-texto').value;
-            const campo = document.getElementById('inp-campo').value;
-            const precio = document.getElementById('inp-precio').value;
-            const limite = parseInt(document.getElementById('inp-limite').value) || 16;
-
-            // Actualizar el registro maestro en internet (id: 1)
-            await supabase.from('partido').upsert([{ id: 1, fecha: fecha, hora: hora, campo: campo, precio: precio, limite: limite, equipos: partidoInfo.equiposGuardadosHTML }]);
+        function actualizarPartido() {
+            partidoInfo.fechaTexto = document.getElementById('inp-fecha-texto').value;
+            partidoInfo.horaTexto = document.getElementById('inp-hora-texto').value;
+            partidoInfo.campo = document.getElementById('inp-campo').value;
+            partidoInfo.precio = document.getElementById('inp-precio').value;
+            partidoInfo.limite = parseInt(document.getElementById('inp-limite').value) || 16;
             
-            await cargarDatosDeInternet();
-            alert("¡Todo actualizado en internet para todo el grupo!");
+            salvarMemoria();
+            renderizarTodo();
+            alert("¡Todo actualizado! Datos guardados.");
         }
 
-        function calcularPrecioPorCabeza() {
-            const costePista = parseFloat(document.getElementById('calc-precio-campo').value) || 0;
-            const personas = parseInt(document.getElementById('calc-jugadores').value) || 0;
-            const resultadoBox = document.getElementById('calc-resultado');
-
-            if (costePista <= 0 || personas <= 0) {
-                resultadoBox.innerText = "❌ Mete números válidos arriba";
-                return;
-            }
-
-            const cuota = costePista / personas;
-            resultadoBox.innerText = `🏃‍♂️ Cada jugador paga: ${cuota.toFixed(2)}€`;
+        function togglePago(index) {
+            listaJugadores[index].pagado = !listaJugadores[index].pagado;
+            salvarMemoria();
+            renderizarTodo();
         }
 
-        async function togglePago(index) {
-            const jugador = listaJugadores[index];
-            const nuevoEstadoPago = !jugador.pagado;
-            
-            // Guardar el estado del Bizum en la nube
-            await supabase.from('jugadores').update({ pagado: nuevoEstadoPago }).eq('id', jugador.id);
-            
-            await cargarDatosDeInternet();
-        }
-
-        async function eliminarJugadorForzoso(index) {
-            const jugador = listaJugadores[index];
-            if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${jugador.nombre}?`)) {
-                // Borrar el jugador del servidor central (Efecto rebote automático en internet)
-                await supabase.from('jugadores').delete().eq('id', jugador.id);
-                await cargarDatosDeInternet();
+        function eliminarJugadorForzoso(index) {
+            if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${listaJugadores[index].nombre}?`)) {
+                listaJugadores.splice(index, 1);
+                salvarMemoria();
+                renderizarTodo();
             }
         }
-
-        async function reiniciarTodoElSistema() {
-            if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán las tablas de internet y la caja por completo.")) {
-                // Borrar todos los jugadores de internet de golpe
-                await supabase.from('jugadores').delete().neq('id', 0);
+         function reiniciarTodoElSistema() {
+            if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
+                listaJugadores = [];
+                partidoInfo = {
+                    fechaTexto: "", 
+                    horaTexto: "", 
+                    campo: "", 
+                    precio: "",
+                    limite: 16,
+                    equiposGuardadosHTML: "" // NUEVO: Borra el sorteo viejo de la memoria al reiniciar
+                };
                 
-                // Resetear la información del partido en el servidor central
-                await supabase.from('partido').upsert([{ id: 1, fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos: "" }]);
-                
+                // Ocultar también el cuadro de los equipos al resetear
                 document.getElementById('resultado-equipos').style.display = 'none';
                 
-                await cargarDatosDeInternet();
-                alert("¡Sistema reseteado por completo en internet!");
+                salvarMemoria();
+                renderizarTodo();
+                alert("¡Sistema reseteado por completo! Todo ha quedado a cero con límite de 16.");
             }
         }
 
-        async function generarEquipos() {
+        function copiarWhatsApp() {
+            const maxRef = parseInt(partidoInfo.limite) || 16;
+            let texto = "⚽ *PACHANGA CONVOCATORIA* ⚽\n";
+            texto += `📅 *Día:* ${partidoInfo.fechaTexto || '-'}\n⏰ *Hora:* ${partidoInfo.horaTexto || '-'}\n🏟️ *Campo:* ${partidoInfo.campo || '-'}\n💵 *Precio:* ${partidoInfo.precio || '-'}\n\n`;
+            texto += `🟢 *CONVOCADOS TITULARES (MÁX ${maxRef}):*\n`;
+            
+            listaJugadores.forEach((j, i) => {
+                if (i < maxRef) texto += `${i + 1}. ${j.nombre} ${j.pagado ? '[✅]' : '[⏳]'}\n`;
+            });
+
+            if (listaJugadores.length > maxRef) {
+                texto += "\n⏳ *LISTA DE ESPERA (SUPLENTES):*\n";
+                listaJugadores.slice(maxRef).forEach((j, i) => {
+                    texto += `${i + 1}. ${j.nombre}\n`;
+                });
+            }
+
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("¡Lista formateada de WhatsApp copiada!");
+            });
+        }
+
+        function generarEquipos() {
             const maxRef = parseInt(partidoInfo.limite) || 16;
             let titulares = listaJugadores.slice(0, maxRef).map(j => j.nombre);
             if(titulares.length < 2) return alert("Faltan jugadores titulares para hacer equipos.");
@@ -468,6 +440,8 @@
             let htmlEquipos = `
                 <h3 style="color: var(--admin-color); margin-top:0; font-size:1.1rem; border-bottom: 1px dashed #334155; padding-bottom:8px; margin-bottom:15px; text-align:center;">🎲 Equipos para la Pachanga</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    
+                    <!-- COLUMNA BLANCA -->
                     <div>
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚪ BLANCO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
@@ -480,6 +454,8 @@
             htmlEquipos += `
                         </div>
                     </div>
+                    
+                    <!-- COLUMNA NEGRA -->
                     <div>
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚫ NEGRO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
@@ -497,17 +473,15 @@
             
             box.innerHTML = htmlEquipos;
             
-            // Guardar la pizarra en la nube para que se quede grabada fija para todo el grupo
-            await supabase.from('partido').upsert([{ id: 1, equipos: htmlEquipos }]);
+            // NUEVO: Guarda el diseño exacto de los equipos en la memoria interna
             partidoInfo.equiposGuardadosHTML = htmlEquipos;
+            salvarMemoria();
             
             box.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Arrancar el sistema leyendo internet al cargar la web
-        window.onload = cargarDatosDeInternet;
+        window.onload = renderizarTodo;
     </script>
 </body>
 </html>
-
-
+  

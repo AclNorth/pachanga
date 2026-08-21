@@ -59,6 +59,7 @@
             color: var(--warning);
             border-color: var(--warning);
         }
+
         .btn {
             background-color: var(--primary); color: white; border: none; padding: 12px 20px;
             font-size: 1rem; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;
@@ -99,6 +100,7 @@
     </style>
 </head>
 <body>
+
     <div class="container">
         <h1>⚽ Pachanga Club ⚽</h1>
 
@@ -113,7 +115,6 @@
                 <div class="info-item"><span>💵 Precio</span><strong id="disp-precio">-</strong></div>
             </div>
         </div>
-
         <!-- 2. APUNTARME AUTOMÁTICO -->
         <div class="card">
             <h2>Apuntarse al Partido</h2>
@@ -127,41 +128,75 @@
         <!-- 3. LISTAS DE CONVOCADOS Y SUPLENTES -->
         <div class="card">
             <h2>Lista de Inscritos</h2>
+            
             <div class="list-title" id="titulo-titulares">👥 Convocados Titulares</div>
             <ul id="lista-titulares"></ul>
+
             <div class="list-title" id="titulo-suplentes" style="color: var(--warning);">⏳ Lista de Reserva (Suplentes)</div>
             <ul id="lista-suplentes"></ul>
+
+            <!-- El resultado de los equipos saldrá aquí arriba, visible para todo el mundo -->
             <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; font-weight:bold; border: 1px dashed var(--admin-color); display:none; text-align: left;"></div>
         </div>
 
-        <!-- 4. PANEL DE CONTROL -->
+        <!-- 4. BOTÓN ACCESO ADMIN PROTEGIDO -->
         <div style="margin-bottom: 30px;">
             <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederPanelAdmin()">🔑 Panel de Administración Oculto</button>
+                        <!-- ZONA SECRETA DE ADMINISTRACIÓN -->
             <div id="panel-secreto" class="admin-zone">
                 <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🛠️ Control del Partido</h2>
-                <div class="admin-form-group"><label>Fecha del Partido:</label><input type="text" id="inp-fecha-texto" class="admin-input"></div>
-                <div class="admin-form-group"><label>Hora:</label><input type="text" id="inp-hora-texto" class="admin-input"></div>
-                <div class="admin-form-group"><label>Campo:</label><input type="text" id="inp-campo" class="admin-input"></div>
-                <div class="admin-form-group"><label>Precio por Persona:</label><input type="text" id="inp-precio" class="admin-input"></div>
-                <div class="admin-form-group"><label>Límite de Jugadores:</label><input type="number" id="inp-limite" class="admin-input" min="2"></div>
-                <button class="btn" style="background:#4338ca;" onclick="actualizarPartido()">💾 Guardar Cambios del Partido</button>
-                <button class="btn btn-danger" onclick="reiniciarTodoElSistema()">🚨 RESET TOTAL</button>
                 
-                <h2>💰 Estado de la Caja</h2>
-                <div class="caja-stats">
-                    <div class="caja-box ok"><span>RECAUDADO ✅</span><strong id="caja-recaudado" style="color:var(--primary);">0.00€</strong></div>
-                    <div class="caja-box" style="border-bottom-color: var(--danger);"><span>PENDIENTE ⏳</span><strong id="caja-pendiente" style="color:var(--danger);">0.00€</strong></div>
-                    <div class="caja-box"><span>TOTAL ESTIMADO</span><strong id="caja-total">0.00€</strong></div>
+                <div class="admin-form-group">
+                    <label>Fecha del Partido (Texto libre, Ej: Este Domingo):</label>
+                    <input type="text" id="inp-fecha-texto" class="admin-input">
                 </div>
-                <h2>👥 Gestión de Pagos y Bajas</h2>
+                <div class="admin-form-group">
+                    <label>Hora (Texto libre, Ej: 20:00 h):</label>
+                    <input type="text" id="inp-hora-texto" class="admin-input">
+                </div>
+                <div class="admin-form-group">
+                    <label>Campo (Texto libre, Ej: Polideportivo Municipal):</label>
+                    <input type="text" id="inp-campo" class="admin-input">
+                </div>
+                <div class="admin-form-group">
+                    <label>Precio por Persona (Texto libre, Ej: 5.00€ o Gratis):</label>
+                    <input type="text" id="inp-precio" class="admin-input">
+                </div>
+                <div class="admin-form-group">
+                    <label>Límite de Jugadores Titulares (Número, Ej: 14, 16, 18, 32...):</label>
+                    <input type="number" id="inp-limite" class="admin-input" min="2">
+                </div>
+                
+                <button class="btn" style="background:#4338ca;" onclick="actualizarPartido()">💾 Guardar Cambios del Partido</button>
+                <button class="btn btn-danger" onclick="reiniciarTodoElSistema()">🚨 RESET TOTAL: Borrar Partido, Datos y Jugadores</button>
+                
+                <h2 style="color: var(--admin-color); border-color: var(--admin-color); margin-top:20px;">💰 Estado de la Caja</h2>
+                <div class="caja-stats">
+                    <div class="caja-box ok">
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">RECAUDADO ✅</span>
+                        <strong id="caja-recaudado" style="color:var(--primary);">0.00€</strong>
+                    </div>
+                    <div class="caja-box" style="border-bottom-color: var(--danger);">
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">PENDIENTE ⏳</span>
+                        <strong id="caja-pendiente" style="color:var(--danger);">0.00€</strong>
+                    </div>
+                    <div class="caja-box">
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">TOTAL ESTIMADO</span>
+                        <strong id="caja-total">0.00€</strong>
+                    </div>
+                </div>
+
+                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">👥 Gestión de Pagos y Bajas Exclusivas</h2>
                 <ul id="admin-lista-jugadores" style="margin-bottom:20px;"></ul>
-                <h2>🚀 Herramientas</h2>
+
+                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🚀 Herramientas del Grupo</h2>
                 <button class="btn btn-wa" onclick="copiarWhatsApp()">📋 Copiar Formato WhatsApp</button>
                 <button class="btn" style="background:#8b5cf6;" onclick="generarEquipos()">🎲 Organizar Equipos Aleatorios</button>
             </div>
         </div>
-    </div>
-            // ENLACE DIRECTO A TU CASILLERO COMPARTIDO EN INTERNET (ACTIVO 24/7)
+    </div> <!-- Cierre del container -->
+    <script>
+        // ENLACE DIRECTO A INTERNET (ACTIVO 24/7 PARA TODO EL GRUPO)
         const URL_API = "https://npoint.io";
         
         const PASSWORD_CORRECTA = "klk830"; 
@@ -325,7 +360,7 @@
 
             listaJugadores.push({ nombre: nombre, pagado: false });
             inputNombre.value = "";
-            sincronizarConLaNube();
+            sincronizarConLaNube(); // Envía al nuevo inscrito directamente a internet
             alert(`⚽ ¡Perfecto ${nombre}! Te has apuntado correctamente.`);
         }
 
@@ -355,19 +390,19 @@
             partidoInfo.precio = document.getElementById('inp-precio').value;
             partidoInfo.limite = parseInt(document.getElementById('inp-limite').value) || 16;
             
-            sincronizarConLaNube();
+            sincronizarConLaNube(); // Envía la nueva hora o fecha a internet para todos
             alert("¡Todo actualizado! Datos guardados.");
         }
 
         function togglePago(index) {
             listaJugadores[index].pagado = !listaJugadores[index].pagado;
-            sincronizarConLaNube();
+            sincronizarConLaNube(); // Sincroniza la palomita del dinero
         }
 
         function eliminarJugadorForzoso(index) {
             if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${listaJugadores[index].nombre}?`)) {
                 listaJugadores.splice(index, 1);
-                sincronizarConLaNube();
+                sincronizarConLaNube(); // Guarda la baja en internet
             }
         }
 
@@ -376,7 +411,7 @@
                 listaJugadores = [];
                 partidoInfo = { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
                 document.getElementById('resultado-equipos').style.display = 'none';
-                sincronizarConLaNube();
+                sincronizarConLaNube(); // Resetea la base online a cero
                 alert("¡Sistema reseteado por completo!");
             }
         }
@@ -449,7 +484,7 @@
             box.innerHTML = htmlEquipos;
             partidoInfo.equiposGuardadosHTML = htmlEquipos;
             
-            sincronizarConLaNube();
+            sincronizarConLaNube(); // Sube el sorteo dinámico a internet
             box.scrollIntoView({ behavior: 'smooth' });
         }
     </script>

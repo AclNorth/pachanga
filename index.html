@@ -5,102 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pachanga Club V1</title>
     <style>
-        :root {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --warning: #f59e0b;
-            --text-light: #f8fafc;
-            --text-muted: #94a3b8;
-            --admin-color: #6366f1;
+        :root { 
+            --bg-main: #0f172a; 
+            --bg-card: #1e293b; 
+            --primary: #10b981; 
+            --danger: #ef4444; 
+            --warning: #f59e0b; 
+            --text-light: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --admin-color: #6366f1; 
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-light);
-            margin: 0;
-            padding: 15px;
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: var(--bg-main); 
+            color: var(--text-light); 
+            margin: 0; 
+            padding: 15px; 
         }
-
         .container { max-width: 550px; margin: 0 auto; }
-        h1 { font-size: 1.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; text-align: center; }
-        h2 { font-size: 1.2rem; margin-top: 0; color: var(--text-light); border-bottom: 1px solid #334155; padding-bottom: 8px; text-align: left; }
-        .card {
-            background-color: var(--bg-card);
-            border-radius: 14px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
+        h1 { font-size: 1.8rem; color: var(--primary); text-transform: uppercase; text-align: center; margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; margin: 0 0 10px 0; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+        .card { 
+            background-color: var(--bg-card); 
+            border-radius: 14px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border: 1px solid #334155; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); 
         }
-
-        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; }
+        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #111827; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary); }
         .info-item span { display: block; font-size: 0.8rem; color: var(--text-muted); }
-        .info-item strong { font-size: 1rem; }
-
-        .counter-badge {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--primary);
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-            border: 1px solid var(--primary);
-            text-align: center;
+        .counter-badge { 
+            background: rgba(16, 185, 129, 0.15); 
+            color: var(--primary); 
+            padding: 10px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            border: 1px solid var(--primary); 
         }
-        .counter-full {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-            border-color: var(--warning);
-        }
-
-        .btn {
-            background-color: var(--primary); color: white; border: none; padding: 12px 20px;
-            font-size: 1rem; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;
-            margin-bottom: 10px; transition: background 0.2s;
-        }
-        .btn:hover { background-color: var(--primary-hover); }
+        .counter-full { background: rgba(245, 158, 11, 0.15); color: var(--warning); border-color: var(--warning); }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 12px 20px; font-size: 1rem; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 10px; }
         .btn-admin { background-color: var(--admin-color); }
-        .btn-admin:hover { background-color: #4f46e5; }
         .btn-danger { background-color: var(--danger); }
-        .btn-danger:hover { background-color: var(--danger-hover); }
         .btn-wa { background-color: #25d366; color: #111827; }
-        .btn-wa:hover { background-color: #20ba5a; }
-
-        .list-title { text-align: left; font-size: 0.9rem; font-weight: bold; color: var(--text-muted); margin: 15px 0 8px 0; text-transform: uppercase; }
-        ul { list-style: none; padding: 0; margin: 0; text-align: left; }
-        
-        li {
-            background: #0f172a; padding: 12px; margin-bottom: 8px; border-radius: 8px;
-            display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;
-        }
-        li.titular-row { border-left: 5px solid var(--primary); }
-        li.suplente-row { border-left: 5px solid var(--warning); }
-
-        .admin-zone {
-            display: none; background: #1e1b4b; border: 2px solid var(--admin-color); padding: 15px; border-radius: 12px; margin-top: 15px;
-        }
-        .admin-form-group { text-align: left; margin-bottom: 12px; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { background: #0f172a; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+        .titular-row { border-left: 5px solid var(--primary); }
+        .suplente-row { border-left: 5px solid var(--warning); }
+        .admin-zone { display: none; background: #1e1b4b; border: 2px solid var(--admin-color); padding: 15px; border-radius: 12px; margin-top: 15px; }
+        .admin-form-group { margin-bottom: 12px; }
         .admin-form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
         .admin-input { width: 95%; padding: 8px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
-
         .caja-stats { display: flex; gap: 10px; margin-bottom: 15px; }
-        .caja-box { flex: 1; background: #111827; padding: 8px; border-radius: 6px; text-align: center; border-bottom: 3px solid var(--admin-color); }
-        .caja-box.ok { border-bottom-color: var(--primary); }
-
-        .admin-actions-row { display: flex; gap: 10px; align-items: center; }
-        .chk-pay { width: 18px; height: 18px; cursor: pointer; }
-        .btn-del { background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .caja-box { flex: 1; background: #111827; padding: 8px; border-radius: 6px; text-align: center; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>⚽ Pachanga Club ⚽</h1>
 
@@ -115,406 +78,160 @@
                 <div class="info-item"><span>💵 Precio</span><strong id="disp-precio">-</strong></div>
             </div>
         </div>
+
         <!-- 2. APUNTARME AUTOMÁTICO -->
         <div class="card">
             <h2>Apuntarse al Partido</h2>
-            <div style="text-align: left; margin-top: 10px;">
-                <label style="display:block; font-size:0.9rem; color:var(--text-muted); margin-bottom:5px;">Escribe tu nombre y apellido:</label>
-                <input type="text" id="nombre-jugador-nuevo" placeholder="Ej: Raúl Pérez" style="width: 95%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; font-size: 1rem;">
-                <button class="btn" onclick="inscribirJugadorAutomatico()">🏃‍♂️ Confirmar Asistencia</button>
-            </div>
+            <input type="text" id="nombre-jugador-nuevo" placeholder="Ej: Raúl Pérez" style="width: 95%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; font-size: 1rem;">
+            <button class="btn" onclick="inscribirJugador()">Confirmar Asistencia</button>
         </div>
 
-        <!-- 3. LISTAS DE CONVOCADOS Y SUPLENTES -->
+        <!-- 3. LISTAS DE CONVOCADOS -->
         <div class="card">
             <h2>Lista de Inscritos</h2>
-            
-            <div class="list-title" id="titulo-titulares">👥 Convocados Titulares</div>
+            <div style="color:var(--text-muted); font-size:0.9rem; font-weight:bold; margin-bottom:5px;">👥 TITULARES</div>
             <ul id="lista-titulares"></ul>
-
-            <div class="list-title" id="titulo-suplentes" style="color: var(--warning);">⏳ Lista de Reserva (Suplentes)</div>
+            <div style="color:var(--warning); font-size:0.9rem; font-weight:bold; margin-top:15px; margin-bottom:5px;">⏳ RESERVAS (SUPLENTES)</div>
             <ul id="lista-suplentes"></ul>
-
-            <!-- Contenedor del sorteo de los equipos -->
-            <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; font-weight:bold; border: 1px dashed var(--admin-color); display:none; text-align: left;"></div>
+            <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; border: 1px dashed var(--admin-color); display:none;"></div>
         </div>
-
-        <!-- 4. BOTÓN ACCESO ADMIN PROTEGIDO -->
+        <!-- 4. PANEL DE CONTROL -->
         <div style="margin-bottom: 30px;">
-            <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederPanelAdmin()">🔑 Panel de Administración Oculto</button>
-            <!-- ZONA SECRETA DE ADMINISTRACIÓN -->
+            <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederAdmin()">🔑 Panel de Administración Oculto</button>
             <div id="panel-secreto" class="admin-zone">
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🛠️ Control del Partido</h2>
+                <h2>Control del Partido</h2>
+                <div class="admin-form-group"><label>Fecha:</label><input type="text" id="inp-fecha" class="admin-input"></div>
+                <div class="admin-form-group"><label>Hora:</label><input type="text" id="inp-hora" class="admin-input"></div>
+                <div class="admin-form-group"><label>Campo:</label><input type="text" id="inp-campo" class="admin-input"></div>
+                <div class="admin-form-group"><label>Precio:</label><input type="text" id="inp-precio" class="admin-input"></div>
+                <div class="admin-form-group"><label>Límite:</label><input type="number" id="inp-limite" class="admin-input"></div>
+                <button class="btn" onclick="guardarPartido()">💾 Guardar Cambios</button>
+                <button class="btn btn-danger" onclick="resetTotal()">🚨 RESET TOTAL</button>
                 
-                <div class="admin-form-group">
-                    <label>Fecha del Partido:</label>
-                    <input type="text" id="inp-fecha-texto" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Hora:</label>
-                    <input type="text" id="inp-hora-texto" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Campo:</label>
-                    <input type="text" id="inp-campo" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Precio por Persona:</label>
-                    <input type="text" id="inp-precio" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Límite de Jugadores Titulares:</label>
-                    <input type="number" id="inp-limite" class="admin-input" min="2">
-                </div>
-                
-                <button class="btn" style="background:#4338ca;" onclick="actualizarPartido()">💾 Guardar Cambios del Partido</button>
-                <button class="btn btn-danger" onclick="reiniciarTodoElSistema()">🚨 RESET TOTAL: Borrar Partido, Datos y Jugadores</button>
-                
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color); margin-top:20px;">💰 Estado de la Caja</h2>
+                <h2>💰 Caja</h2>
                 <div class="caja-stats">
-                    <div class="caja-box ok">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">RECAUDADO ✅</span>
-                        <strong id="caja-recaudado">0.00€</strong>
-                    </div>
-                    <div class="caja-box" style="border-bottom-color: var(--danger);">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">PENDIENTE ⏳</span>
-                        <strong id="caja-pendiente">0.00€</strong>
-                    </div>
-                    <div class="caja-box">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">TOTAL ESTIMADO</span>
-                        <strong id="caja-total">0.00€</strong>
-                    </div>
+                    <div class="caja-box"><span>✅ REC: </span><strong id="caja-rec">0€</strong></div>
+                    <div class="caja-box"><span>⏳ PEND: </span><strong id="caja-pend">0€</strong></div>
                 </div>
-
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">👥 Gestión de Pagos y Bajas Exclusivas</h2>
                 <ul id="admin-lista-jugadores" style="margin-bottom:20px;"></ul>
-
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🚀 Herramientas del Grupo</h2>
-                <button class="btn btn-wa" onclick="copiarWhatsApp()">📋 Copiar Formato WhatsApp</button>
-                <button class="btn" style="background:#8b5cf6;" onclick="generarEquipos()">🎲 Organizar Equipos Aleatorios</button>
+                <button class="btn btn-wa" onclick="copiarWhatsApp()">📋 Copiar WhatsApp</button>
+                <button class="btn" style="background:#8b5cf6;" onclick="sortearEquipos()">🎲 Sorteo Aleatorio</button>
             </div>
         </div>
-    </div> <!-- Cierre de container -->
-    <!-- MOTOR DE SUPABASE INYECTADO DIRECTAMENTE PARA EVITAR BLOQUEOS DE RED (BLOQUE A) -->
-        <!-- MOTOR DE SUPABASE BLINDADO EN LOCAL (0 ERRORES EN EL EDITOR) -->
+    </div>
+
     <script>
-        !function(){const e="ZXhwb3J0cy5jcmVhdGVDbGllbnQgPSAoZSwgdCkgPT4ge2NvbnN0IHIgPSAoKGUsdCk9Pntjb25zdCByPW5ldyBVUkwoYCR7ZX0ke3QrPScvJz90OicvJyt0fWApO3JldHVybntmZXRjaDphc3luYyhlLHQpPT57Y29uc3Qgbz1hd2FpdCBmZXRjaChyLnRvU3RyaW5nKCkse21ldGhvZDp0fSk7cmV0dXJuIG8uanNvbigpfX19KShlLHQpO3JldHVybntmcm9tOmU9Pih7c2VsZWN0OigpPT57cmV0dXJueyB0aGVuOmFzeW5jKGUpPT57Y29uc3QgdD1hd2FpdCByLmZldGNoKGUsIkdFVCIpO3JldHVybiBlKHtkYXRhOnQsZXJyb3I6bnVsbH0pfX19LGluc2VydDplPT4oeyB0aGVuOmFzeW5jKHQpPT57Y29uc3Qgbz1hd2FpdCByLmZldGNoKCIiLCJQT1NUIik7cmV0dXJuIHQoe2RhdGE6byxlcnJvcjpudWxsfSl9fSksZXE6KCk9Pih7bWF5YmVTaW5nbGU6KCk9Pih7dGhlbjphc3luYyhlKT0+e2NvbnN0IHQ9YXdhaXQgci5mZXRjaChlLCJHRVQiKTtyZXR1cm4gZSh7ZGF0YTp0WzBdLGVycm9yOm51bGx9KX19KSxzaW5nbGU6KCk9Pih7dGhlbjphc3luYyhlKT0+e2NvbnN0IHQ9YXdhaXQgci5mZXRjaChlLCJHRVQiKTtyZXR1cm4gZSh7ZGF0YTp0WzBdLGVycm9yOm51bGx9KX19KSl9KSxvcmRlcjooKT0+KHNlbGVjdDooKT0+KHt0aGVuOmFzeW5jKGUpPT57Y29uc3QgdD1hd2FpdCByLmZldGNoKGUsIkdFVCIpO3JldHVybiBlKHtkYXRhOnQsZXJyb3I6bnVsbH0pfX0pKX0pLHVwZGF0ZTplPT4oeyBlcTooKT0+KHsgdGhlbjphc3luYyh0KT0+e3JldHVybiB0KHtkYXRhOm51bGwsZXJyb3I6bnVsbH0pfX0pfSksZGVsZXRlOigpPT4oeyBlcTooKT0+KHsgdGhlbjphc3luYyh0KT0+e3JldHVybiB0KHtkYXRhOm51bGwsZXJyb3I6bnVsbH0pfX0pfSl9KSxjaGFubmVsOmU9Pih7b246KCk9Pih7c3Vic2NyaWJlOigpPT5udWxsfSl9KX19Ow==";const t=atob(e);const r=new Function("exports",t);const o={};r(o);window.supabase=o;}();
-    </script>
+        // CONFIGURACIÓN DE TU NUEVA NUBE COMPACTA JSONBIN (CON TUS CLAVES INTEGRADAS)
+        const BIN_ID = "6a87d184f5f4af5e292fb34b"; 
+        const MASTER_KEY = "$2a$10$eR95QU2W1ABCYF1R.Nwo4O2GGpaC9vRa3/O53eetHBpLwZtR/2oVe";
+        const URL_API = `https://jsonbin.io{BIN_ID}`;
 
+        let baseDatos = { partido: {}, jugadores: [] };
+        let isAdmin = false;
 
-        <script>
-        // CREDENCIALES COMPROBADAS DE TU PROYECTO REAL 'alinvnvzssapljnbcxzx'
-        const SUPABASE_URL = "https://supabase.co"; 
-        const SUPABASE_ANON_KEY = "sb_publishable_pS0eNKhfqJgViI-SDXXuIw_2fSqgst4"; 
-        
-        let supabase;
+        document.addEventListener("DOMContentLoaded", descargarDatos);
 
-        const PASSWORD_CORRECTA = "klk830"; 
-        let isAdminAutenticado = false;
-
-        let partidoInfo = { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
-        let listaJugadores = [];
-
-        // ESCUCHADORES INICIALES GARANTIZADOS CON EL MOTOR LOCAL ANTERIOR
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("Inicializando conexión con el motor local...");
+        async function descargarDatos() {
             try {
-                if (window.supabase && window.supabase.createClient) {
-                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    cargarDatosDesdeSupabase();
-                    conectarCanalRealtime();
-                } else {
-                    alert("🚨 Error grave: El motor cargado localmente sufrió un fallo sintáctico.");
-                }
-            } catch (e) {
-                alert("🚨 Fallo de arranque: " + e.message);
-            }
-        });
-
-        async function cargarDatosDesdeSupabase() {
-            try {
-                const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
-                if (partido) {
-                    partidoInfo = {
-                        fechaTexto: partido.fecha || "-",
-                        horaTexto: partido.hora || "-",
-                        campo: partido.campo || "-",
-                        precio: partido.precio || "-",
-                        limite: partido.limite || 16,
-                        equiposGuardadosHTML: partido.equipos || ""
-                    };
-                }
-
-                const { data: jugadores } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
-                if (jugadores) {
-                    listaJugadores = jugadores;
-                }
-
+                const res = await fetch(`${URL_API}/latest`, { headers: { "X-Master-Key": MASTER_KEY } });
+                const json = await res.json();
+                baseDatos = json.record;
                 renderizarTodo();
-            } catch (err) {
-                console.error("Error al cargar datos de Supabase:", err.message);
+            } catch (e) {
+                console.error("Error al descargar datos:", e);
             }
         }
 
-        function conectarCanalRealtime() {
-            supabase
-                .channel('pachanga-realtime')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'partido' }, () => cargarDatosDesdeSupabase())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'jugadores' }, () => cargarDatosDesdeSupabase())
-                .subscribe();
+        async function subirDatos() {
+            try {
+                await fetch(URL_API, { method: "PUT", headers: { "Content-Type": "application/json", "X-Master-Key": MASTER_KEY }, body: JSON.stringify(baseDatos) });
+                renderizarTodo();
+            } catch (e) {
+                console.error("Error al subir datos:", e);
+            }
         }
-
-        // FUNCIÓN PRINCIPAL DE RENDERIZADO VISUAL Y CÁLCULOS
         function renderizarTodo() {
-            document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
-            document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
-            document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
-            document.getElementById('disp-precio').innerText = partidoInfo.precio || "-";
+            const p = baseDatos.partido;
+            document.getElementById('disp-fecha').innerText = p.fecha || "-";
+            document.getElementById('disp-hora').innerText = p.hora || "-";
+            document.getElementById('disp-campo').innerText = p.campo || "-";
+            document.getElementById('disp-precio').innerText = p.precio ? p.precio + "€" : "-";
 
-            if (isAdminAutenticado) {
-                document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
-                document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
-                document.getElementById('inp-campo').value = partidoInfo.campo || "";
-                document.getElementById('inp-precio').value = partidoInfo.precio || "";
-                document.getElementById('inp-limite').value = partidoInfo.limite || 16;
-            }
+            const limite = parseInt(p.limite) || 16;
+            const libres = Math.max(0, limite - baseDatos.jugadores.length);
+            const status = document.getElementById('plazas-status');
+            status.innerText = libres > 0 ? `🟢 ¡Quedan ${libres} plazas disponibles!` : `⚠️ ¡Cupo lleno! Lista de espera activa.`;
+            status.className = libres > 0 ? "counter-badge" : "counter-badge counter-full";
 
-            const maxRef = parseInt(partidoInfo.limite) || 16;
-            const titularesActuales = Math.min(listaJugadores.length, maxRef);
-            const plazasLibres = maxRef - titularesActuales;
-            const badgePlazas = document.getElementById('plazas-status');
-            
-            document.getElementById("titulo-titulares").innerText = `👥 Convocados Titulares (Máx. ${maxRef})`;
-
-            if (plazasLibres > 0) {
-                badgePlazas.innerText = `🟢 ¡Quedan ${plazasLibres} plazas disponibles!`;
-                badgePlazas.className = "counter-badge";
-            } else {
-                badgePlazas.innerText = `⚠️ ¡Cupo lleno! Siguiente inscrito irá a lista de espera.`;
-                badgePlazas.className = "counter-badge counter-full";
-            }
-                        
-            let precioExtraido = 0;
-            if (partidoInfo.precio && partidoInfo.precio !== "-") {
-                precioExtraido = parseFloat(partidoInfo.precio.toString().replace(/[^0-9.]/g, '')) || 0;
-            }
-            
-            const tUL = document.getElementById('lista-titulares');
-            const sUL = document.getElementById('lista-suplentes');
+            const tUL = document.getElementById('lista-titulares'); const sUL = document.getElementById('lista-suplentes');
             tUL.innerHTML = ""; sUL.innerHTML = "";
+            let rec = 0, pend = 0;
 
-            let totalRecaudado = 0;
-            let totalPendiente = 0;
-
-            listaJugadores.forEach((j, i) => {
-                const posicion = i + 1;
-                const esTitular = posicion <= maxRef;
+            baseDatos.jugadores.forEach((j, i) => {
+                const esTitular = (i < limite);
                 const li = document.createElement('li');
                 li.className = esTitular ? "titular-row" : "suplente-row";
-                
-                if (esTitular) {
-                    if (j.pagado) totalRecaudado += precioExtraido;
-                    else totalPendiente += precioExtraido;
-                }
-
-                li.innerHTML = `
-                    <span><strong>${posicion}. ${j.nombre}</strong></span>
-                    <div class="player-actions">
-                        <span style="color:${j.pagado ? '#10b981':'#ef4444'}; font-weight:bold; font-size:0.9rem;">
-                            ${j.pagado ? '✅ Pagado' : '⏳ Pendiente'}
-                        </span>
-                    </div>
-                `;
-                
-                if (esTitular) tUL.appendChild(li); else sUL.appendChild(li);
+                li.innerHTML = `<span><strong>${i+1}. ${j.nombre}</strong></span><span>${j.pagado ? '✅ Pagado' : '⏳ Pendiente'}</span>`;
+                if(esTitular) { tUL.appendChild(li); if(j.pagado) rec += parseFloat(p.precio)||0; else pend += parseFloat(p.precio)||0; } 
+                else { sUL.appendChild(li); }
             });
 
-            // ACTUALIZACIÓN DE CONTADORES DE LA CAJA ADMINISTRATIVA
-            document.getElementById('caja-recaudado').innerText = totalRecaudado.toFixed(2) + "€";
-            document.getElementById('caja-pendiente').innerText = totalPendiente.toFixed(2) + "€";
-            document.getElementById('caja-total').innerText = (totalRecaudado + totalPendiente).toFixed(2) + "€";
+            document.getElementById('caja-rec').innerText = rec + "€"; document.getElementById('caja-pend').innerText = pend + "€";
 
-            // LISTA DE ADMINISTRACIÓN DE JUGADORES
-            const adminUL = document.getElementById('admin-lista-jugadores');
-            adminUL.innerHTML = "";
-            listaJugadores.forEach((j, i) => {
+            const adminUL = document.getElementById('admin-lista-jugadores'); adminUL.innerHTML = "";
+            baseDatos.jugadores.forEach((j, i) => {
                 const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${i+1}. ${j.nombre}</span>
-                    <div class="admin-actions-row">
-                        <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">¿Pagó? 
-                            <input type="checkbox" class="chk-pay" ${j.pagado ? 'checked':''} onchange="togglePago('${j.id}', this.checked)">
-                        </label>
-                        <button class="btn-del" onclick="eliminarJugadorForzoso('${j.id}')">Borrar Jugador</button>
-                    </div>
-                `;
+                li.innerHTML = `<span>${j.nombre}</span><div><input type="checkbox" ${j.pagado?'checked':''} onchange="marcarPago(${i}, this.checked)"> <button onclick="borrarJugador(${i})" style="background:var(--danger); color:white; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">X</button></div>`;
                 adminUL.appendChild(li);
             });
 
             const box = document.getElementById('resultado-equipos');
-            if (partidoInfo.equiposGuardadosHTML) {
-                box.style.display = 'block';
-                box.innerHTML = partidoInfo.equiposGuardadosHTML;
-            } else {
-                box.style.display = 'none';
-            }
-        } // Cierre formal de la función renderizarTodo()
-
-        // ACCIÓN: INSCRIPCIÓN PÚBLICA AUTOMÁTICA
-        async function inscribirJugadorAutomatico() {
-            const inputNombre = document.getElementById('nombre-jugador-nuevo');
-            const nombre = inputNombre.value.trim();
-
-            if (nombre === "") {
-                alert("❌ Por favor, escribe tu nombre antes de confirmar.");
-                return;
-            }
-
-            const existe = listaJugadores.some(j => j.nombre.toLowerCase() === nombre.toLowerCase());
-            if (existe) {
-                alert("⚠️ Este nombre ya está en la lista.");
-                return;
-            }
-
-            const { error } = await supabase.from('jugadores').insert([{ nombre: nombre, pagado: false }]);
-            if (error) {
-                alert("❌ Error al inscribir: " + error.message);
-                return;
-            }
-
-            inputNombre.value = "";
-            alert(`⚽ ¡Perfecto ${nombre}! Te has apuntado correctamente.`);
+            if(p.equipos) { box.style.display = 'block'; box.innerHTML = p.equipos; } else { box.style.display = 'none'; }
         }
 
-        // ACCIÓN: ACCESO INTEGRADO AL PANEL ADMIN
-        function accederPanelAdmin() {
-            if (isAdminAutenticado) {
-                document.getElementById('panel-secreto').style.display = 'none';
-                document.getElementById('btn-toggle-admin').innerText = "🔑 Panel de Administración Oculto";
-                isAdminAutenticado = false;
-                return;
-            }
-            
-            let pass = prompt("Introduce la contraseña de administrador:");
-            if (pass === PASSWORD_CORRECTA) {
-                document.getElementById('panel-secreto').style.display = 'block';
-                document.getElementById('btn-toggle-admin').innerText = "🔒 Cerrar Panel Administrador";
-                isAdminAutenticado = true;
-                renderTodoInputsAdmin();
-                renderizarTodo();
-            } else if (pass !== null) {
-                alert("❌ Contraseña incorrecta.");
-            }
+        function inscribirJugador() {
+            const inp = document.getElementById('nombre-jugador-nuevo'); const n = inp.value.trim();
+            if(!n) return alert("Escribe tu nombre");
+            if(baseDatos.jugadores.some(j => j.nombre.toLowerCase() === n.toLowerCase())) return alert("Ya estás en la lista");
+            baseDatos.jugadores.push({ nombre: n, pagado: false }); inp.value = ""; subirDatos();
         }
 
-        function renderTodoInputsAdmin() {
-            document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
-            document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
-            document.getElementById('inp-campo').value = partidoInfo.campo || "";
-            document.getElementById('inp-precio').value = partidoInfo.precio || "";
-            document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+        function accederAdmin() {
+            let pass = prompt("Contraseña:");
+            if(pass === "klk830") { document.getElementById('panel-secreto').style.display = 'block'; isAdmin = true; renderTodoAdmin(); }
         }
 
-        // ACCIÓN ADMIN: GUARDAR CAMBIOS DEL PARTIDO
-        async function actualizarPartido() {
-            const nuevosDatos = {
-                fecha: document.getElementById('inp-fecha-texto').value,
-                hora: document.getElementById('inp-hora-texto').value,
-                campo: document.getElementById('inp-campo').value,
-                precio: document.getElementById('inp-precio').value,
-                limite: parseInt(document.getElementById('inp-limite').value) || 16
-            };
-            
-            await supabase.from('partido').update(nuevosDatos).eq('id', 1);
-            alert("¡Todo actualizado! Datos guardados.");
+        function renderTodoAdmin() {
+            const p = baseDatos.partido;
+            document.getElementById('inp-fecha').value = p.fecha || ""; document.getElementById('inp-hora').value = p.hora || "";
+            document.getElementById('inp-campo').value = p.campo || ""; document.getElementById('inp-precio').value = p.precio || "0";
+            document.getElementById('inp-limite').value = p.limite || 16;
         }
 
-        // ACCIÓN ADMIN: MODIFICAR ESTADO DE PAGO
-        async function togglePago(idJugador, estaMarcado) {
-            await supabase.from('jugadores').update({ pagado: estaMarcado }).eq('id', idJugador);
+        function guardarPartido() {
+            baseDatos.partido.fecha = document.getElementById('inp-fecha').value; baseDatos.partido.hora = document.getElementById('inp-hora').value;
+            baseDatos.partido.campo = document.getElementById('inp-campo').value; baseDatos.partido.precio = document.getElementById('inp-precio').value;
+            baseDatos.partido.limite = document.getElementById('inp-limite').value; subirDatos(); alert("Partido guardado");
         }
 
-        // ACCIÓN ADMIN: BAJA FORZOSA
-        async function eliminarJugadorForzoso(idJugador) {
-            const jugador = listaJugadores.find(j => j.id === idJugador);
-            const nombre = jugador ? jugador.nombre : "jugador";
+        function marcarPago(i, chk) { baseDatos.jugadores[i].pagado = chk; subirDatos(); }
+        function borrarJugador(i) { if(confirm("¿Borrar?")) { baseDatos.jugadores.splice(i, 1); subirDatos(); } }
+        function resetTotal() { if(confirm("¿Resetear todo?")) { baseDatos.jugadores = []; baseDatos.partido.equipos = ""; subirDatos(); } }
 
-            if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${nombre}?`)) {
-                await supabase.from('jugadores').delete().eq('id', idJugador);
-            }
-        }
-
-        // ACCIÓN ADMIN: RESETEAR SISTEMA COMPLETO
-        async function reiniciarTodoElSistema() {
-            if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
-                await supabase.from('jugadores').delete().neq('nombre', '');
-                const resetPartido = { fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos: "" };
-                await supabase.from('partido').update(resetPartido).eq('id', 1);
-                document.getElementById('resultado-equipos').style.display = 'none';
-                alert("¡Sistema reseteado por completo! Todo ha quedado a cero con límite de 16.");
-            }
-        }
-
-        // UTILIDAD: EXPORTACIÓN PARA WHATSAPP
         function copiarWhatsApp() {
-            const maxRef = parseInt(partidoInfo.limite) || 16;
-            let texto = "⚽ *PACHANGA CONVOCATORIA* ⚽\n";
-            texto += `📅 *Día:* ${partidoInfo.fechaTexto || '-'}\n⏰ *Hora:* ${partidoInfo.horaTexto || '-'}\n🏟️ *Campo:* ${partidoInfo.campo || '-'}\n💵 *Precio:* ${partidoInfo.precio || '-'}\n\n`;
-            texto += `🟢 *CONVOCADOS TITULARES (MÁX ${maxRef}):*\n`;
-            
-            listaJugadores.forEach((j, i) => {
-                if (i < maxRef) texto += `${i + 1}. ${j.nombre} ${j.pagado ? '[✅]' : '[⏳]'}\n`;
-            });
-
-            if (listaJugadores.length > maxRef) {
-                texto += "\n⏳ *LISTA DE ESPERA (SUPLENTES):*\n";
-                listaJugadores.slice(maxRef).forEach((j, i) => {
-                    texto += `${i + 1}. ${j.nombre}\n`;
-                });
-            }
-
-            navigator.clipboard.writeText(texto).then(() => {
-                alert("¡Lista formateada de WhatsApp copiada!");
-            });
+            const p = baseDatos.partido; let t = `⚽ *PACHANGA* ⚽\n📅 *Día:* ${p.fecha}\n⏰ *Hora:* ${p.hora}\n🏟️ *Campo:* ${p.campo}\n💵 *Precio:* ${p.precio}€\n\n🟢 *TITULARES:*\n`;
+            baseDatos.jugadores.forEach((j, i) => { if(i < p.limite) t += `${i+1}. ${j.nombre} ${j.pagado ? '[✅]' : '[⏳]'}\n`; });
+            navigator.clipboard.writeText(t); alert("¡Copiado!");
         }
 
-        // UTILIDAD ADMIN: GENERAR SORTEO ALEATORIO
-        async function generarEquipos() {
-            const maxRef = parseInt(partidoInfo.limite) || 16;
-            let titulares = listaJugadores.slice(0, maxRef).map(j => j.nombre);
-            if(titulares.length < 2) return alert("Faltan jugadores titulares para hacer equipos.");
-            
-            titulares.sort(() => Math.random() - 0.5);
-            const mitad = Math.ceil(titulares.length / 2);
-            const eqA = titulares.slice(0, mitad);
-            const eqB = titulares.slice(mitad);
-
-            let htmlEquipos = `
-                <h3 style="color: var(--admin-color); margin-top:0; font-size:1.1rem; border-bottom: 1px dashed #334155; padding-bottom:8px; margin-bottom:15px; text-align:center;">🎲 Equipos para la Pachanga</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div>
-                        <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚪ BLANCO</div>
-                        <div style="display:flex; flex-direction:column; gap:6px;">
-            `;
-            eqA.forEach((p, idx) => {
-                htmlEquipos += `<div style="background:#ffffff; color:#0f172a; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border-left:4px solid #94a3b8; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${idx+1}. ${p}</div>`;
-            });
-            htmlEquipos += `
-                        </div>
-                    </div>
-                    <div>
-                        <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚫ NEGRO</div>
-                        <div style="display:flex; flex-direction:column; gap:6px;">
-            `;
-            eqB.forEach((p, idx) => {
-                htmlEquipos += `<div style="background:#090d16; color:#f8fafc; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border:1px solid #334155; border-left:4px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${idx+1}. ${p}</div>`;
-            });
-            htmlEquipos += `</div></div></div>`;
-            
-            await supabase.from('partido').update({ equipos: htmlEquipos }).eq('id', 1);
-
-            const box = document.getElementById('resultado-equipos');
-            if (box) { box.scrollIntoView({ behavior: 'smooth' }); }
+        function sortearEquipos() {
+            let t = baseDatos.jugadores.slice(0, baseDatos.partido.limite).map(j => j.nombre);
+            if(t.length < 2) return alert("Faltan jugadores");
+            t.sort(() => Math.random() - 0.5); const m = Math.ceil(t.length / 2);
+            let html = `<h3>🎲 Sorteo</h3><div style="display:grid; grid-template-columns:1fr 1fr;"><div><b>⚪ BLANCOS</b>`;
+            t.slice(0, m).forEach(p => html += `<div>${p}</div>`);
+            html += `</div><div><b>⚫ NEGROS</b>`; t.slice(m).forEach(p => html += `<div>${p}</div>`);
+            html += `</div></div>`; baseDatos.partido.equipos = html; subirDatos();
         }
     </script>
 </body>

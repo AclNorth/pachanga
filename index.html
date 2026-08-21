@@ -148,23 +148,23 @@
                 <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🛠️ Control del Partido</h2>
                 
                 <div class="admin-form-group">
-                    <label>Fecha del Partido (Texto libre, Ej: Este Domingo):</label>
+                    <label>Fecha del Partido:</label>
                     <input type="text" id="inp-fecha-texto" class="admin-input">
                 </div>
                 <div class="admin-form-group">
-                    <label>Hora (Texto libre, Ej: 20:00 h):</label>
+                    <label>Hora:</label>
                     <input type="text" id="inp-hora-texto" class="admin-input">
                 </div>
                 <div class="admin-form-group">
-                    <label>Campo (Texto libre, Ej: Polideportivo Municipal):</label>
+                    <label>Campo:</label>
                     <input type="text" id="inp-campo" class="admin-input">
                 </div>
                 <div class="admin-form-group">
-                    <label>Precio por Persona (Texto libre, Ej: 5.00€ o Gratis):</label>
+                    <label>Precio por Persona:</label>
                     <input type="text" id="inp-precio" class="admin-input">
                 </div>
                 <div class="admin-form-group">
-                    <label>Límite de Jugadores Titulares (Número, Ej: 14, 16, 18, 32...):</label>
+                    <label>Límite de Jugadores Titulares:</label>
                     <input type="number" id="inp-limite" class="admin-input" min="2">
                 </div>
                 
@@ -196,6 +196,7 @@
             </div>
         </div>
     </div> <!-- Cierre de container -->
+
     <!-- CARGA EL SDK OFICIAL DE SUPABASE -->
     <script src="https://jsdelivr.net"></script>
     <script>
@@ -203,7 +204,7 @@
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsaW52bnZ6c3NhcGxqbmNieHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjkxNTcsImV4cCI6MjEwMjg0NTE1N30.O0QCRnyZzrNWXH8Lio7Edqe_9_OshubHM_TlwnvAwMc";
         
-        // Uso de window para asegurar una inicialización limpia sin conflictos
+        // Uso de window para asegurar inicialización limpia sin conflictos en el navegador
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const PASSWORD_CORRECTA = "klk830"; 
@@ -501,7 +502,6 @@
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚫ NEGRO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
             `;
-            box.innerHTML = htmlEquipos; // Asegura render local inmediato en pantalla
             eqB.forEach((p, idx) => {
                 htmlEquipos += `<div style="background:#090d16; color:#f8fafc; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border:1px solid #334155; border-left:4px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${idx+1}. ${p}</div>`;
             });
@@ -515,3 +515,8 @@
         }
     </script>
 </body>
+</html>
+
+
+
+        

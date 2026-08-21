@@ -227,26 +227,28 @@
             conectarCanalRealtime();
         });
 
-        async function cargarDatosDesdeSupabase() {
-            const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
-            if (partido) {
-                partidoInfo = {
-                    fechaTexto: partido.fecha,
-                    horaTexto: partido.hora,
-                    campo: partido.campo,
-                    precio: partido.precio,
-                    limite: partido.limite,
-                    equiposGuardadosHTML: partido.equipos_generados
-                };
-            }
+        // MODIFICA ESTA FUNCIÓN EN TU PARTE 3:
+async function cargarDatosDesdeSupabase() {
+    const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
+    if (partido) {
+        partidoInfo = {
+            fechaTexto: partido.fecha,
+            horaTexto: partido.hora,
+            campo: partido.campo,
+            precio: partido.precio,
+            limite: partido.limite,
+            equiposGuardadosHTML: partido.equipos // <-- CAMBIADO AQUÍ (Antes ponía partido.equipos_generados)
+        };
+    }
 
-            const { data: jugadores } = await supabase.from('jugadores').select('*').order('creado_en', { ascending: true });
-            if (jugadores) {
-                listaJugadores = jugadores;
-            }
+    const { data: jugadores } = await supabase.from('jugadores').select('*').order('creado_en', { ascending: true });
+    if (jugadores) {
+        listaJugadores = jugadores;
+    }
 
-            renderizarTodo();
-        }
+    renderizarTodo();
+}
+
 
         function conectarCanalRealtime() {
             supabase

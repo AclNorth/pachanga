@@ -115,7 +115,6 @@
                 <div class="info-item"><span>💵 Precio</span><strong id="disp-precio">-</strong></div>
             </div>
         </div>
-
         <!-- 2. APUNTARME AUTOMÁTICO -->
         <div class="card">
             <h2>Apuntarse al Partido</h2>
@@ -136,13 +135,14 @@
             <div class="list-title" id="titulo-suplentes" style="color: var(--warning);">⏳ Lista de Reserva (Suplentes)</div>
             <ul id="lista-suplentes"></ul>
 
-            <!-- NUEVO: El resultado de los equipos ahora saldrá aquí arriba, para todo el mundo -->
+            <!-- Contenedor del sorteo de los equipos -->
             <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; font-weight:bold; border: 1px dashed var(--admin-color); display:none; text-align: left;"></div>
         </div>
+
         <!-- 4. BOTÓN ACCESO ADMIN PROTEGIDO -->
         <div style="margin-bottom: 30px;">
             <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederPanelAdmin()">🔑 Panel de Administración Oculto</button>
-            
+
             <!-- ZONA SECRETA DE ADMINISTRACIÓN -->
             <div id="panel-secreto" class="admin-zone">
                 <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🛠️ Control del Partido</h2>
@@ -195,44 +195,79 @@
                 <button class="btn" style="background:#8b5cf6;" onclick="generarEquipos()">🎲 Organizar Equipos Aleatorios</button>
             </div>
         </div>
-    </div>
-
-<script>
-        // CONTRASEÑA: Cambia "admin123" por la clave que tú quieras usar en tu móvil
-        const PASSWORD_CORRECTA = "klk830"; 
+    </div> <!-- Cierre de container -->
+    <!-- CARGA EL SDK OFICIAL DE SUPABASE -->
+    <script src="https://jsdelivr.net"></script>
+    <script>
+        // CONFIGURACIÓN PROYECTO REAL CON TU PROYECTO 'alinvnvzssapljnbcxzx'
+        const SUPABASE_URL = "https://supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsaW52bnZ6c3NhcGxqbmNieHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjkxNTcsImV4cCI6MjEwMjg0NTE1N30.O0QCRnyZzrNWXH8Lio7Edqe_9_OshubHM_TlwnvAwMc";
         
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const PASSWORD_CORRECTA = "klk830"; 
         let isAdminAutenticado = false;
 
-        // Carga la información guardada o inicia limpia con 16 jugadores de fábrica
-        let partidoInfo = JSON.parse(localStorage.getItem('partidoInfo')) || {
+        let partidoInfo = {
             fechaTexto: "", 
             horaTexto: "", 
             campo: "", 
             precio: "",
             limite: 16,
-            equiposGuardadosHTML: "" // NUEVO: Guarda el sorteo para que no se borre nunca
+            equiposGuardadosHTML: "" 
         };
 
-        let listaJugadores = JSON.parse(localStorage.getItem('listaJugadores')) || [];
+        let listaJugadores = [];
 
-        function salvarMemoria() {
-            localStorage.setItem('partidoInfo', JSON.stringify(partidoInfo));
-            localStorage.setItem('listaJugadores', JSON.stringify(listaJugadores));
+        // ESCUCHADORES INICIALES Y TIEMPO REAL
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarDatosDesdeSupabase();
+            conectarCanalRealtime();
+        });
+
+        async function cargarDatosDesdeSupabase() {
+            const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
+            if (partido) {
+                partidoInfo = {
+                    fechaTexto: partido.fecha,
+                    horaTexto: partido.hora,
+                    campo: partido.campo,
+                    precio: partido.precio,
+                    limite: partido.limite,
+                    equiposGuardadosHTML: partido.equipos_generados
+                };
+            }
+
+            const { data: jugadores } = await supabase.from('jugadores').select('*').order('creado_en', { ascending: true });
+            if (jugadores) {
+                listaJugadores = jugadores;
+            }
+
+            renderizarTodo();
         }
 
+        function conectarCanalRealtime() {
+            supabase
+                .channel('pachanga-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'partido' }, () => cargarDatosDesdeSupabase())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'jugadores' }, () => cargarDatosDesdeSupabase())
+                .subscribe();
+        }
+
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO VISUAL
         function renderizarTodo() {
-            // Render info partido en la pantalla principal
             document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
             document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
             document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
             document.getElementById('disp-precio').innerText = partidoInfo.precio || "-";
 
-            // Inputs del admin (rellena los cuadros al abrir el panel)
-            document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
-            document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
-            document.getElementById('inp-campo').value = partidoInfo.campo || "";
-            document.getElementById('inp-precio').value = partidoInfo.precio || "";
-            document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+            if (isAdminAutenticado) {
+                document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
+                document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
+                document.getElementById('inp-campo').value = partidoInfo.campo || "";
+                document.getElementById('inp-precio').value = partidoInfo.precio || "";
+                document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+            }
 
             const maxRef = parseInt(partidoInfo.limite) || 16;
             const titularesActuales = Math.min(listaJugadores.length, maxRef);
@@ -284,11 +319,12 @@
                 
                 if (esTitular) tUL.appendChild(li); else sUL.appendChild(li);
             });
-
+            // ACTUALIZACIÓN DE CONTADORES DE LA CAJA ADMINISTRATIVA
             document.getElementById('caja-recaudado').innerText = totalRecaudado.toFixed(2) + "€";
             document.getElementById('caja-pendiente').innerText = totalPendiente.toFixed(2) + "€";
             document.getElementById('caja-total').innerText = (totalRecaudado + totalPendiente).toFixed(2) + "€";
 
+            // LISTA DE ADMINISTRACIÓN DE JUGADORES
             const adminUL = document.getElementById('admin-lista-jugadores');
             adminUL.innerHTML = "";
             listaJugadores.forEach((j, i) => {
@@ -297,15 +333,14 @@
                     <span>${i+1}. ${j.nombre}</span>
                     <div class="admin-actions-row">
                         <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">¿Pagó? 
-                            <input type="checkbox" class="chk-pay" ${j.pagado ? 'checked':''} onchange="togglePago(${i})">
+                            <input type="checkbox" class="chk-pay" ${j.pagado ? 'checked':''} onchange="togglePago('${j.id}', this.checked)">
                         </label>
-                        <button class="btn-del" onclick="eliminarJugadorForzoso(${i})">Borrar Jugador</button>
+                        <button class="btn-del" onclick="eliminarJugadorForzoso('${j.id}')">Borrar Jugador</button>
                     </div>
                 `;
                 adminUL.appendChild(li);
             });
 
-            // NUEVO: Muestra los equipos guardados al cargar la página
             const box = document.getElementById('resultado-equipos');
             if (partidoInfo.equiposGuardadosHTML) {
                 box.style.display = 'block';
@@ -313,9 +348,10 @@
             } else {
                 box.style.display = 'none';
             }
-        }
+        } // Cierre formal de renderizarTodo()
 
-        function inscribirJugadorAutomatico() {
+        // ACCIÓN: INSCRIPCIÓN PÚBLICA AUTOMÁTICA
+        async function inscribirJugadorAutomatico() {
             const inputNombre = document.getElementById('nombre-jugador-nuevo');
             const nombre = inputNombre.value.trim();
 
@@ -330,13 +366,17 @@
                 return;
             }
 
-            listaJugadores.push({ nombre: nombre, pagado: false });
-            salvarMemoria();
-            renderizarTodo();
+            const { error } = await supabase.from('jugadores').insert([{ nombre: nombre, pagado: false }]);
+            if (error) {
+                alert("❌ Error: " + error.message);
+                return;
+            }
+
             inputNombre.value = "";
             alert(`⚽ ¡Perfecto ${nombre}! Te has apuntado correctamente.`);
         }
 
+        // ACCIÓN: ACCESO INTEGRADO AL PANEL ADMIN
         function accederPanelAdmin() {
             if (isAdminAutenticado) {
                 document.getElementById('panel-secreto').style.display = 'none';
@@ -350,58 +390,64 @@
                 document.getElementById('panel-secreto').style.display = 'block';
                 document.getElementById('btn-toggle-admin').innerText = "🔒 Cerrar Panel Administrador";
                 isAdminAutenticado = true;
+                renderTodoInputsAdmin();
                 renderizarTodo();
             } else if (pass !== null) {
                 alert("❌ Contraseña incorrecta.");
             }
         }
 
-        function actualizarPartido() {
-            partidoInfo.fechaTexto = document.getElementById('inp-fecha-texto').value;
-            partidoInfo.horaTexto = document.getElementById('inp-hora-texto').value;
-            partidoInfo.campo = document.getElementById('inp-campo').value;
-            partidoInfo.precio = document.getElementById('inp-precio').value;
-            partidoInfo.limite = parseInt(document.getElementById('inp-limite').value) || 16;
+        function renderTodoInputsAdmin() {
+            document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
+            document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
+            document.getElementById('inp-campo').value = partidoInfo.campo || "";
+            document.getElementById('inp-precio').value = partidoInfo.precio || "";
+            document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+        }
+
+        // ACCIÓN ADMIN: GUARDAR CAMBIOS DEL PARTIDO
+        async function actualizarPartido() {
+            const nuevosDatos = {
+                fecha: document.getElementById('inp-fecha-texto').value,
+                hora: document.getElementById('inp-hora-texto').value,
+                campo: document.getElementById('inp-campo').value,
+                precio: document.getElementById('inp-precio').value,
+                limite: parseInt(document.getElementById('inp-limite').value) || 16
+            };
             
-            salvarMemoria();
-            renderizarTodo();
+            await supabase.from('partido').update(nuevosDatos).eq('id', 1);
             alert("¡Todo actualizado! Datos guardados.");
         }
 
-        function togglePago(index) {
-            listaJugadores[index].pagado = !listaJugadores[index].pagado;
-            salvarMemoria();
-            renderizarTodo();
+        // ACCIÓN ADMIN: MODIFICAR ESTADO DE PAGO
+        async function togglePago(idJugador, estaMarcado) {
+            await supabase.from('jugadores').update({ pagado: estaMarcado }).eq('id', idJugador);
         }
 
-        function eliminarJugadorForzoso(index) {
-            if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${listaJugadores[index].nombre}?`)) {
-                listaJugadores.splice(index, 1);
-                salvarMemoria();
-                renderizarTodo();
+        // ACCIÓN ADMIN: BAJA FORZOSA
+        async function eliminarJugadorForzoso(idJugador) {
+            const jugador = listaJugadores.find(j => j.id === idJugador);
+            const nombre = jugador ? jugador.nombre : "jugador";
+
+            if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${nombre}?`)) {
+                await supabase.from('jugadores').delete().eq('id', idJugador);
             }
         }
-         function reiniciarTodoElSistema() {
+
+        // ACCIÓN ADMIN: RESETEAR SISTEMA COMPLETO
+        async function reiniciarTodoElSistema() {
             if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
-                listaJugadores = [];
-                partidoInfo = {
-                    fechaTexto: "", 
-                    horaTexto: "", 
-                    campo: "", 
-                    precio: "",
-                    limite: 16,
-                    equiposGuardadosHTML: "" // NUEVO: Borra el sorteo viejo de la memoria al reiniciar
-                };
+                await supabase.from('jugadores').delete().neq('nombre', '');
                 
-                // Ocultar también el cuadro de los equipos al resetear
+                const resetPartido = { fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos_generados: "" };
+                await supabase.from('partido').update(resetPartido).eq('id', 1);
+                
                 document.getElementById('resultado-equipos').style.display = 'none';
-                
-                salvarMemoria();
-                renderizarTodo();
                 alert("¡Sistema reseteado por completo! Todo ha quedado a cero con límite de 16.");
             }
         }
 
+        // UTILIDAD: EXPORTACIÓN PARA WHATSAPP
         function copiarWhatsApp() {
             const maxRef = parseInt(partidoInfo.limite) || 16;
             let texto = "⚽ *PACHANGA CONVOCATORIA* ⚽\n";
@@ -424,7 +470,8 @@
             });
         }
 
-        function generarEquipos() {
+        // UTILIDAD ADMIN: GENERAR SORTEO ALEATORIO
+        async function generarEquipos() {
             const maxRef = parseInt(partidoInfo.limite) || 16;
             let titulares = listaJugadores.slice(0, maxRef).map(j => j.nombre);
             if(titulares.length < 2) return alert("Faltan jugadores titulares para hacer equipos.");
@@ -434,54 +481,33 @@
             const eqA = titulares.slice(0, mitad);
             const eqB = titulares.slice(mitad);
 
-            const box = document.getElementById('resultado-equipos');
-            box.style.display = 'block';
-            
             let htmlEquipos = `
                 <h3 style="color: var(--admin-color); margin-top:0; font-size:1.1rem; border-bottom: 1px dashed #334155; padding-bottom:8px; margin-bottom:15px; text-align:center;">🎲 Equipos para la Pachanga</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    
-                    <!-- COLUMNA BLANCA -->
                     <div>
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚪ BLANCO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
             `;
-            
             eqA.forEach((p, idx) => {
                 htmlEquipos += `<div style="background:#ffffff; color:#0f172a; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border-left:4px solid #94a3b8; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${idx+1}. ${p}</div>`;
             });
-            
             htmlEquipos += `
                         </div>
                     </div>
-                    
-                    <!-- COLUMNA NEGRA -->
                     <div>
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚫ NEGRO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
             `;
-            
             eqB.forEach((p, idx) => {
                 htmlEquipos += `<div style="background:#090d16; color:#f8fafc; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border:1px solid #334155; border-left:4px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${idx+1}. ${p}</div>`;
             });
+            htmlEquipos += `</div></div></div>`;
             
-            htmlEquipos += `
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            box.innerHTML = htmlEquipos;
-            
-            // NUEVO: Guarda el diseño exacto de los equipos en la memoria interna
-            partidoInfo.equiposGuardadosHTML = htmlEquipos;
-            salvarMemoria();
-            
-            box.scrollIntoView({ behavior: 'smooth' });
-        }
+            await supabase.from('partido').update({ equipos_generados: htmlEquipos }).eq('id', 1);
 
-        window.onload = renderizarTodo;
+            const box = document.getElementById('resultado-equipos');
+            if (box) { box.scrollIntoView({ behavior: 'smooth' }); }
+        }
     </script>
 </body>
 </html>
-  

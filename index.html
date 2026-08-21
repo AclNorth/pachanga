@@ -79,8 +79,8 @@
             background: #0f172a; padding: 12px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;
         }
-        .titular-row { border-left: 5px solid var(--primary); }
-        .suplente-row { border-left: 5px solid var(--warning); }
+        li.titular-row { border-left: 5px solid var(--primary); }
+        li.suplente-row { border-left: 5px solid var(--warning); }
 
         .admin-zone {
             display: none; background: #1e1b4b; border: 2px solid var(--admin-color); padding: 15px; border-radius: 12px; margin-top: 15px;
@@ -138,7 +138,7 @@
         <div style="margin-bottom: 30px;">
             <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederPanelAdmin()">🔑 Panel de Administración Oculto</button>
             <div id="panel-secreto" class="admin-zone">
-                <h2>🛠️ Control del Partido</h2>
+                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🛠️ Control del Partido</h2>
                 <div class="admin-form-group"><label>Fecha del Partido:</label><input type="text" id="inp-fecha-texto" class="admin-input"></div>
                 <div class="admin-form-group"><label>Hora:</label><input type="text" id="inp-hora-texto" class="admin-input"></div>
                 <div class="admin-form-group"><label>Campo:</label><input type="text" id="inp-campo" class="admin-input"></div>
@@ -153,73 +153,76 @@
                     <div class="caja-box" style="border-bottom-color: var(--danger);"><span>PENDIENTE ⏳</span><strong id="caja-pendiente" style="color:var(--danger);">0.00€</strong></div>
                     <div class="caja-box"><span>TOTAL ESTIMADO</span><strong id="caja-total">0.00€</strong></div>
                 </div>
-                <h2>👥 Gestión de Pagos</h2>
+                <h2>👥 Gestión de Pagos y Bajas</h2>
                 <ul id="admin-lista-jugadores" style="margin-bottom:20px;"></ul>
-                
-                <!-- NUEVO: Herramientas para compartir y sincronizar entre dispositivos usando texto puro -->
-                <h2>🚀 Herramientas Compartidas</h2>
+                <h2>🚀 Herramientas</h2>
                 <button class="btn btn-wa" onclick="copiarWhatsApp()">📋 Copiar Formato WhatsApp</button>
                 <button class="btn" style="background:#8b5cf6;" onclick="generarEquipos()">🎲 Organizar Equipos Aleatorios</button>
-                
-                <div style="margin-top: 15px; border-top: 1px dashed #334155; padding-top: 15px;">
-                    <div class="admin-form-group">
-                        <label>Código de Sincronización (Para enviar la lista a otro móvil):</label>
-                        <input type="text" id="inp-sync-code" class="admin-input" placeholder="El código aparecerá aquí al dar a Generar" onclick="this.select()">
-                    </div>
-                    <button class="btn" style="background:#3b82f6; font-size:0.9rem; padding:8px;" onclick="generarCodigoSincronizacion()">🔄 Generar Código Para Compartir</button>
-                    <button class="btn" style="background:#f59e0b; font-size:0.9rem; padding:8px;" onclick="cargarCodigoSincronizacion()">📥 Cargar Código Desde Otro Móvil</button>
-                </div>
             </div>
         </div>
     </div>
-    <script>
-        // MOTOR DE ALMACENAMIENTO DE SEGURIDAD INTERNO PARA CODEPEN
-        const KEY_STORE = "pachanga_live_store_v1_alinvnvz";
-        
-        let baseDatos = {
-            partido: { fechaTexto: "Por definir", horaTexto: "00:00", campo: "Por definir", precio: "0", limite: 16, equiposGuardadosHTML: "" },
-            listaJugadores: []
-        };
+            // ENLACE DIRECTO A TU CASILLERO COMPARTIDO EN INTERNET (ACTIVO 24/7)
+        const URL_API = "https://npoint.io";
         
         const PASSWORD_CORRECTA = "klk830"; 
         let isAdminAutenticado = false;
+
+        let baseDatos = {
+            partido: { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" },
+            listaJugadores: []
+        };
+
         let partidoInfo = baseDatos.partido;
         let listaJugadores = baseDatos.listaJugadores;
 
-        document.addEventListener("DOMContentLoaded", descargarDatosInternos);
+        // BUCLE EN TIEMPO REAL: Revisa internet cada 2 segundos de forma automática
+        document.addEventListener("DOMContentLoaded", () => {
+            descargarDatosNube();
+            setInterval(descargarDatosNube, 2000); 
+        });
 
-        function descargarDatosInternos() {
+        async function descargarDatosNube() {
             try {
-                const local = localStorage.getItem(KEY_STORE);
-                if (local) { 
-                    baseDatos = JSON.parse(local); 
+                const res = await fetch(URL_API);
+                if (res.ok) {
+                    const nuevosDatos = await res.json();
+                    
+                    // Solo actualizamos la pantalla si realmente hay cambios nuevos en internet
+                    if (JSON.stringify(nuevosDatos) !== JSON.stringify(baseDatos)) {
+                        baseDatos = nuevosDatos;
+                        partidoInfo = baseDatos.partido || { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
+                        listaJugadores = baseDatos.listaJugadores || [];
+                        renderizarTodo();
+                    }
                 }
-                partidoInfo = baseDatos.partido || { fechaTexto: "Por definir", horaTexto: "00:00", campo: "Por definir", precio: "0", limite: 16, equiposGuardadosHTML: "" };
-                listaJugadores = baseDatos.listaJugadores || [];
-                renderizarTodo();
-            } catch (e) { 
-                console.error("Error al leer memoria local:", e); 
+            } catch (e) {
+                console.error("Error en la sincronización en tiempo real:", e);
             }
         }
 
-        function sincronizarDatosInternos() {
+        async function sincronizarConLaNube() {
             try {
                 baseDatos.partido = partidoInfo;
                 baseDatos.listaJugadores = listaJugadores;
-                localStorage.setItem(KEY_STORE, JSON.stringify(baseDatos));
+                
+                await fetch(URL_API, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(baseDatos)
+                });
                 renderizarTodo();
-            } catch (e) { 
-                console.error("Error al guardar en memoria local:", e); 
+            } catch (e) {
+                console.error("Error al guardar en internet:", e);
             }
         }
-
         function renderizarTodo() {
             document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
             document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
             document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
-            document.getElementById('disp-precio').innerText = partidoInfo.precio ? partidoInfo.precio + "€" : "-";
+            document.getElementById('disp-precio').innerText = partidoInfo.precio || "-";
 
-            if (isAdminAutenticado) {
+            // Sincroniza los cuadros de texto solo si el administrador tiene el panel abierto y no está escribiendo
+            if (isAdminAutenticado && document.activeElement.tagName !== "INPUT") {
                 document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
                 document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
                 document.getElementById('inp-campo').value = partidoInfo.campo || "";
@@ -291,11 +294,12 @@
                         <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">¿Pagó? 
                             <input type="checkbox" class="chk-pay" ${j.pagado ? 'checked':''} onchange="togglePago(${i})">
                         </label>
-                        <button class="btn-del" onclick="borrarJugador(${i})">Borrar Jugador</button>
+                        <button class="btn-del" onclick="eliminarJugadorForzoso(${i})">Borrar</button>
                     </div>
                 `;
                 adminUL.appendChild(li);
             });
+
             const box = document.getElementById('resultado-equipos');
             if (partidoInfo.equiposGuardadosHTML) {
                 box.style.display = 'block';
@@ -304,7 +308,6 @@
                 box.style.display = 'none';
             }
         }
-
         function inscribirJugadorAutomatico() {
             const inputNombre = document.getElementById('nombre-jugador-nuevo');
             const nombre = inputNombre.value.trim();
@@ -321,8 +324,8 @@
             }
 
             listaJugadores.push({ nombre: nombre, pagado: false });
-            sincronizarDatosInternos();
             inputNombre.value = "";
+            sincronizarConLaNube();
             alert(`⚽ ¡Perfecto ${nombre}! Te has apuntado correctamente.`);
         }
 
@@ -352,19 +355,19 @@
             partidoInfo.precio = document.getElementById('inp-precio').value;
             partidoInfo.limite = parseInt(document.getElementById('inp-limite').value) || 16;
             
-            sincronizarDatosInternos();
-            alert("¡Todo actualizado! Datos guardados en la memoria.");
+            sincronizarConLaNube();
+            alert("¡Todo actualizado! Datos guardados.");
         }
 
         function togglePago(index) {
             listaJugadores[index].pagado = !listaJugadores[index].pagado;
-            sincronizarDatosInternos();
+            sincronizarConLaNube();
         }
 
-        function borrarJugador(index) {
+        function eliminarJugadorForzoso(index) {
             if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${listaJugadores[index].nombre}?`)) {
                 listaJugadores.splice(index, 1);
-                sincronizarDatosInternos();
+                sincronizarConLaNube();
             }
         }
 
@@ -373,8 +376,7 @@
                 listaJugadores = [];
                 partidoInfo = { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
                 document.getElementById('resultado-equipos').style.display = 'none';
-                document.getElementById('inp-sync-code').value = "";
-                sincronizarDatosInternos();
+                sincronizarConLaNube();
                 alert("¡Sistema reseteado por completo!");
             }
         }
@@ -447,38 +449,10 @@
             box.innerHTML = htmlEquipos;
             partidoInfo.equiposGuardadosHTML = htmlEquipos;
             
-            sincronizarDatosInternos();
+            sincronizarConLaNube();
             box.scrollIntoView({ behavior: 'smooth' });
         }
-
-        // FUNCIONES MAESTRAS: Evitan los bloqueos de internet enviando los datos codificados por texto
-        function generarCodigoSincronizacion() {
-            const dataString = btoa(unescape(encodeURIComponent(JSON.stringify(baseDatos))));
-            document.getElementById('inp-sync-code').value = dataString;
-            navigator.clipboard.writeText(dataString);
-            alert("📋 ¡Código de sincronización generado y copiado al portapapeles! Pégaselo a tu amigo por WhatsApp para actualizar su móvil.");
-        }
-
-        function cargarCodigoSincronizacion() {
-            const codigo = prompt("Pega aquí el código de sincronización que te enviaron por WhatsApp:");
-            if (!codigo) return;
-            try {
-                const decodedData = JSON.parse(decodeURIComponent(escape(atob(codigo.trim()))));
-                if (decodedData.partido && decodedData.listaJugadores) {
-                    baseDatos = decodedData;
-                    partidoInfo = baseDatos.partido;
-                    listaJugadores = baseDatos.listaJugadores;
-                    sincronizarDatosInternos();
-                    alert("📥 ¡Datos cargados y sincronizados con éxito!");
-                } else {
-                    alert("❌ El código no contiene la estructura correcta.");
-                }
-            } catch (e) {
-                alert("❌ Código inválido o corrupto. Asegúrate de copiarlo completo.");
-            }
-        }
-
-        window.onload = descargarDatosInternos;
     </script>
 </body>
 </html>
+

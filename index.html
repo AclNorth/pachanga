@@ -59,7 +59,6 @@
             color: var(--warning);
             border-color: var(--warning);
         }
-
         .btn {
             background-color: var(--primary); color: white; border: none; padding: 12px 20px;
             font-size: 1rem; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;
@@ -80,8 +79,8 @@
             background: #0f172a; padding: 12px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;
         }
-        li.titular-row { border-left: 5px solid var(--primary); }
-        li.suplente-row { border-left: 5px solid var(--warning); }
+        .titular-row { border-left: 5px solid var(--primary); }
+        .suplente-row { border-left: 5px solid var(--warning); }
 
         .admin-zone {
             display: none; background: #1e1b4b; border: 2px solid var(--admin-color); padding: 15px; border-radius: 12px; margin-top: 15px;
@@ -100,7 +99,6 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>⚽ Pachanga Club ⚽</h1>
 
@@ -115,6 +113,7 @@
                 <div class="info-item"><span>💵 Precio</span><strong id="disp-precio">-</strong></div>
             </div>
         </div>
+
         <!-- 2. APUNTARME AUTOMÁTICO -->
         <div class="card">
             <h2>Apuntarse al Partido</h2>
@@ -128,140 +127,105 @@
         <!-- 3. LISTAS DE CONVOCADOS Y SUPLENTES -->
         <div class="card">
             <h2>Lista de Inscritos</h2>
-            
             <div class="list-title" id="titulo-titulares">👥 Convocados Titulares</div>
             <ul id="lista-titulares"></ul>
-
             <div class="list-title" id="titulo-suplentes" style="color: var(--warning);">⏳ Lista de Reserva (Suplentes)</div>
             <ul id="lista-suplentes"></ul>
-
-            <!-- El resultado de los equipos saldrá aquí arriba, visible para todo el mundo -->
             <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; font-weight:bold; border: 1px dashed var(--admin-color); display:none; text-align: left;"></div>
         </div>
 
-        <!-- 4. BOTÓN ACCESO ADMIN PROTEGIDO -->
+        <!-- 4. PANEL DE CONTROL -->
         <div style="margin-bottom: 30px;">
             <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederPanelAdmin()">🔑 Panel de Administración Oculto</button>
-            <!-- ZONA SECRETA DE ADMINISTRACIÓN -->
             <div id="panel-secreto" class="admin-zone">
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🛠️ Control del Partido</h2>
-                
-                <div class="admin-form-group">
-                    <label>Fecha del Partido (Texto libre, Ej: Este Domingo):</label>
-                    <input type="text" id="inp-fecha-texto" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Hora (Texto libre, Ej: 20:00 h):</label>
-                    <input type="text" id="inp-hora-texto" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Campo (Texto libre, Ej: Polideportivo Municipal):</label>
-                    <input type="text" id="inp-campo" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Precio por Persona (Texto libre, Ej: 5.00€ o Gratis):</label>
-                    <input type="text" id="inp-precio" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>Límite de Jugadores Titulares (Número, Ej: 14, 16, 18, 32...):</label>
-                    <input type="number" id="inp-limite" class="admin-input" min="2">
-                </div>
-                
+                <h2>🛠️ Control del Partido</h2>
+                <div class="admin-form-group"><label>Fecha del Partido:</label><input type="text" id="inp-fecha-texto" class="admin-input"></div>
+                <div class="admin-form-group"><label>Hora:</label><input type="text" id="inp-hora-texto" class="admin-input"></div>
+                <div class="admin-form-group"><label>Campo:</label><input type="text" id="inp-campo" class="admin-input"></div>
+                <div class="admin-form-group"><label>Precio por Persona:</label><input type="text" id="inp-precio" class="admin-input"></div>
+                <div class="admin-form-group"><label>Límite de Jugadores:</label><input type="number" id="inp-limite" class="admin-input" min="2"></div>
                 <button class="btn" style="background:#4338ca;" onclick="actualizarPartido()">💾 Guardar Cambios del Partido</button>
-                <button class="btn btn-danger" onclick="reiniciarTodoElSistema()">🚨 RESET TOTAL: Borrar Partido, Datos y Jugadores</button>
+                <button class="btn btn-danger" onclick="reiniciarTodoElSistema()">🚨 RESET TOTAL</button>
                 
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color); margin-top:20px;">💰 Estado de la Caja</h2>
+                <h2>💰 Estado de la Caja</h2>
                 <div class="caja-stats">
-                    <div class="caja-box ok">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">RECAUDADO ✅</span>
-                        <strong id="caja-recaudado" style="color:var(--primary);">0.00€</strong>
-                    </div>
-                    <div class="caja-box" style="border-bottom-color: var(--danger);">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">PENDIENTE ⏳</span>
-                        <strong id="caja-pendiente" style="color:var(--danger);">0.00€</strong>
-                    </div>
-                    <div class="caja-box">
-                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">TOTAL ESTIMADO</span>
-                        <strong id="caja-total">0.00€</strong>
-                    </div>
+                    <div class="caja-box ok"><span>RECAUDADO ✅</span><strong id="caja-recaudado" style="color:var(--primary);">0.00€</strong></div>
+                    <div class="caja-box" style="border-bottom-color: var(--danger);"><span>PENDIENTE ⏳</span><strong id="caja-pendiente" style="color:var(--danger);">0.00€</strong></div>
+                    <div class="caja-box"><span>TOTAL ESTIMADO</span><strong id="caja-total">0.00€</strong></div>
                 </div>
-
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">👥 Gestión de Pagos y Bajas Exclusivas</h2>
+                <h2>👥 Gestión de Pagos</h2>
                 <ul id="admin-lista-jugadores" style="margin-bottom:20px;"></ul>
-
-                <h2 style="color: var(--admin-color); border-color: var(--admin-color);">🚀 Herramientas del Grupo</h2>
+                
+                <!-- NUEVO: Herramientas para compartir y sincronizar entre dispositivos usando texto puro -->
+                <h2>🚀 Herramientas Compartidas</h2>
                 <button class="btn btn-wa" onclick="copiarWhatsApp()">📋 Copiar Formato WhatsApp</button>
                 <button class="btn" style="background:#8b5cf6;" onclick="generarEquipos()">🎲 Organizar Equipos Aleatorios</button>
+                
+                <div style="margin-top: 15px; border-top: 1px dashed #334155; padding-top: 15px;">
+                    <div class="admin-form-group">
+                        <label>Código de Sincronización (Para enviar la lista a otro móvil):</label>
+                        <input type="text" id="inp-sync-code" class="admin-input" placeholder="El código aparecerá aquí al dar a Generar" onclick="this.select()">
+                    </div>
+                    <button class="btn" style="background:#3b82f6; font-size:0.9rem; padding:8px;" onclick="generarCodigoSincronizacion()">🔄 Generar Código Para Compartir</button>
+                    <button class="btn" style="background:#f59e0b; font-size:0.9rem; padding:8px;" onclick="cargarCodigoSincronizacion()">📥 Cargar Código Desde Otro Móvil</button>
+                </div>
             </div>
         </div>
-    </div> <!-- Cierre de container -->
+    </div>
     <script>
-        // CONFIGURACIÓN DE TU NUEVA NUBE COMPACTA Y COMPARTIDA (LIBRE DE RESTRICCIONES MÓVILES)
-        const KEY_ID = "pachanga_club_v1_live_alinvnvz";
-        const URL_API = `https://kvbin.com{KEY_ID}`;
-
-        const PASSWORD_CORRECTA = "klk830"; 
-        let isAdminAutenticado = false;
-
+        // MOTOR DE ALMACENAMIENTO DE SEGURIDAD INTERNO PARA CODEPEN
+        const KEY_STORE = "pachanga_live_store_v1_alinvnvz";
+        
         let baseDatos = {
-            partido: { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" },
+            partido: { fechaTexto: "Por definir", horaTexto: "00:00", campo: "Por definir", precio: "0", limite: 16, equiposGuardadosHTML: "" },
             listaJugadores: []
         };
-
-        // Enlazamos las variables con el formato global de tu documento original
+        
+        const PASSWORD_CORRECTA = "klk830"; 
+        let isAdminAutenticado = false;
         let partidoInfo = baseDatos.partido;
         let listaJugadores = baseDatos.listaJugadores;
 
-        // CARGA INICIAL AUTOMÁTICA DESDE LA NUBE COMPARTIDA
-        document.addEventListener("DOMContentLoaded", descargarDatosDeLaNube);
+        document.addEventListener("DOMContentLoaded", descargarDatosInternos);
 
-        async function descargarDatosDeLaNube() {
+        function descargarDatosInternos() {
             try {
-                const res = await fetch(URL_API);
-                if (res.ok) {
-                    const texto = await res.text();
-                    if (texto && texto.trim() !== "") {
-                        baseDatos = JSON.parse(texto);
-                        partidoInfo = baseDatos.partido || { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
-                        listaJugadores = baseDatos.listaJugadores || [];
-                    }
-                } else if (res.status === 404) {
-                    // Inicializa la caja online con datos limpios de fábrica si no existiera
-                    await sincronizarConLaNube();
+                const local = localStorage.getItem(KEY_STORE);
+                if (local) { 
+                    baseDatos = JSON.parse(local); 
                 }
+                partidoInfo = baseDatos.partido || { fechaTexto: "Por definir", horaTexto: "00:00", campo: "Por definir", precio: "0", limite: 16, equiposGuardadosHTML: "" };
+                listaJugadores = baseDatos.listaJugadores || [];
                 renderizarTodo();
-            } catch (e) {
-                console.error("Error de conexión al bajar datos:", e);
+            } catch (e) { 
+                console.error("Error al leer memoria local:", e); 
             }
         }
 
-        async function sincronizarConLaNube() {
+        function sincronizarDatosInternos() {
             try {
                 baseDatos.partido = partidoInfo;
                 baseDatos.listaJugadores = listaJugadores;
-                await fetch(URL_API, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(baseDatos)
-                });
+                localStorage.setItem(KEY_STORE, JSON.stringify(baseDatos));
                 renderizarTodo();
-            } catch (e) {
-                console.error("Error al sincronizar con internet:", e);
+            } catch (e) { 
+                console.error("Error al guardar en memoria local:", e); 
             }
         }
+
         function renderizarTodo() {
-            // Render info partido en la pantalla principal
             document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
             document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
             document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
-            document.getElementById('disp-precio').innerText = partidoInfo.precio || "-";
+            document.getElementById('disp-precio').innerText = partidoInfo.precio ? partidoInfo.precio + "€" : "-";
 
-            // Inputs del admin (rellena los cuadros al abrir el panel)
-            document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
-            document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
-            document.getElementById('inp-campo').value = partidoInfo.campo || "";
-            document.getElementById('inp-precio').value = partidoInfo.precio || "";
-            document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+            if (isAdminAutenticado) {
+                document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
+                document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
+                document.getElementById('inp-campo').value = partidoInfo.campo || "";
+                document.getElementById('inp-precio').value = partidoInfo.precio || "";
+                document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+            }
 
             const maxRef = parseInt(partidoInfo.limite) || 16;
             const titularesActuales = Math.min(listaJugadores.length, maxRef);
@@ -294,7 +258,6 @@
                 const posicion = i + 1;
                 const esTitular = posicion <= maxRef;
                 const li = document.createElement('li');
-                
                 li.className = esTitular ? "titular-row" : "suplente-row";
                 
                 if (esTitular) {
@@ -328,12 +291,11 @@
                         <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">¿Pagó? 
                             <input type="checkbox" class="chk-pay" ${j.pagado ? 'checked':''} onchange="togglePago(${i})">
                         </label>
-                        <button class="btn-del" onclick="eliminarJugadorForzoso(${i})">Borrar Jugador</button>
+                        <button class="btn-del" onclick="borrarJugador(${i})">Borrar Jugador</button>
                     </div>
                 `;
                 adminUL.appendChild(li);
             });
-            // Muestra los equipos guardados al cargar la página
             const box = document.getElementById('resultado-equipos');
             if (partidoInfo.equiposGuardadosHTML) {
                 box.style.display = 'block';
@@ -341,7 +303,7 @@
             } else {
                 box.style.display = 'none';
             }
-        } // Cierre formal de la función renderizarTodo()
+        }
 
         function inscribirJugadorAutomatico() {
             const inputNombre = document.getElementById('nombre-jugador-nuevo');
@@ -359,7 +321,7 @@
             }
 
             listaJugadores.push({ nombre: nombre, pagado: false });
-            sincronizarConLaNube(); // Guarda el nuevo jugador en la nube al instante
+            sincronizarDatosInternos();
             inputNombre.value = "";
             alert(`⚽ ¡Perfecto ${nombre}! Te has apuntado correctamente.`);
         }
@@ -390,38 +352,30 @@
             partidoInfo.precio = document.getElementById('inp-precio').value;
             partidoInfo.limite = parseInt(document.getElementById('inp-limite').value) || 16;
             
-            sincronizarConLaNube(); // Sincroniza la nueva configuración del partido en internet
-            alert("¡Todo actualizado! Datos guardados.");
+            sincronizarDatosInternos();
+            alert("¡Todo actualizado! Datos guardados en la memoria.");
         }
 
         function togglePago(index) {
             listaJugadores[index].pagado = !listaJugadores[index].pagado;
-            sincronizarConLaNube(); // Actualiza el estado del pago en la nube
+            sincronizarDatosInternos();
         }
 
-        function eliminarJugadorForzoso(index) {
+        function borrarJugador(index) {
             if(confirm(`[ADMIN] ¿Seguro que quieres forzar la baja de ${listaJugadores[index].nombre}?`)) {
                 listaJugadores.splice(index, 1);
-                sincronizarConLaNube(); // Guarda la baja en internet
+                sincronizarDatosInternos();
             }
         }
 
         function reiniciarTodoElSistema() {
             if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
                 listaJugadores = [];
-                partidoInfo = {
-                    fechaTexto: "", 
-                    horaTexto: "", 
-                    campo: "", 
-                    precio: "",
-                    limite: 16,
-                    equiposGuardadosHTML: "" 
-                };
-                
+                partidoInfo = { fechaTexto: "", horaTexto: "", campo: "", precio: "", limite: 16, equiposGuardadosHTML: "" };
                 document.getElementById('resultado-equipos').style.display = 'none';
-                
-                sincronizarConLaNube(); // Resetea la base de datos en la nube por completo
-                alert("¡Sistema reseteado por completo! Todo ha quedado a cero con límite de 16.");
+                document.getElementById('inp-sync-code').value = "";
+                sincronizarDatosInternos();
+                alert("¡Sistema reseteado por completo!");
             }
         }
 
@@ -493,11 +447,38 @@
             box.innerHTML = htmlEquipos;
             partidoInfo.equiposGuardadosHTML = htmlEquipos;
             
-            sincronizarConLaNube(); // Sube el diseño exacto de los equipos a internet
+            sincronizarDatosInternos();
             box.scrollIntoView({ behavior: 'smooth' });
         }
 
-        window.onload = renderizarTodo;
+        // FUNCIONES MAESTRAS: Evitan los bloqueos de internet enviando los datos codificados por texto
+        function generarCodigoSincronizacion() {
+            const dataString = btoa(unescape(encodeURIComponent(JSON.stringify(baseDatos))));
+            document.getElementById('inp-sync-code').value = dataString;
+            navigator.clipboard.writeText(dataString);
+            alert("📋 ¡Código de sincronización generado y copiado al portapapeles! Pégaselo a tu amigo por WhatsApp para actualizar su móvil.");
+        }
+
+        function cargarCodigoSincronizacion() {
+            const codigo = prompt("Pega aquí el código de sincronización que te enviaron por WhatsApp:");
+            if (!codigo) return;
+            try {
+                const decodedData = JSON.parse(decodeURIComponent(escape(atob(codigo.trim()))));
+                if (decodedData.partido && decodedData.listaJugadores) {
+                    baseDatos = decodedData;
+                    partidoInfo = baseDatos.partido;
+                    listaJugadores = baseDatos.listaJugadores;
+                    sincronizarDatosInternos();
+                    alert("📥 ¡Datos cargados y sincronizados con éxito!");
+                } else {
+                    alert("❌ El código no contiene la estructura correcta.");
+                }
+            } catch (e) {
+                alert("❌ Código inválido o corrupto. Asegúrate de copiarlo completo.");
+            }
+        }
+
+        window.onload = descargarDatosInternos;
     </script>
 </body>
 </html>

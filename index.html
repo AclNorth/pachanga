@@ -68,7 +68,7 @@
         .btn:hover { background-color: var(--primary-hover); }
         .btn-admin { background-color: var(--admin-color); }
         .btn-admin:hover { background-color: #4f46e5; }
-        .btn-danger { background-color: var(--danger); }
+        .btn-danger { background-color: var(--danger); color: white; }
         .btn-danger:hover { background-color: var(--danger-hover); }
         .btn-wa { background-color: #25d366; color: #111827; }
         .btn-wa:hover { background-color: #20ba5a; }
@@ -174,11 +174,11 @@
                 <div class="caja-stats">
                     <div class="caja-box ok">
                         <span style="font-size:0.75rem; color:var(--text-muted); display:block;">RECAUDADO ✅</span>
-                        <strong id="caja-recaudado" style="color:var(--primary);">0.00€</strong>
+                        <strong id="caja-recaudado">0.00€</strong>
                     </div>
                     <div class="caja-box" style="border-bottom-color: var(--danger);">
                         <span style="font-size:0.75rem; color:var(--text-muted); display:block;">PENDIENTE ⏳</span>
-                        <strong id="caja-pendiente" style="color:var(--danger);">0.00€</strong>
+                        <strong id="caja-pendiente">0.00€</strong>
                     </div>
                     <div class="caja-box">
                         <span style="font-size:0.75rem; color:var(--text-muted); display:block;">TOTAL ESTIMADO</span>
@@ -195,9 +195,10 @@
             </div>
         </div>
     </div> <!-- Cierre de container -->
-           <script src="https://jsdelivr.net"></script>
+    <!-- CARGA DE LIBRERÍA SUPABASE RESPALDADA POR UNPKG (EVITA BLOQUEOS DE RED EN MÓVILES) -->
+    <script src="https://unpkg.com"></script>
     <script>
-        // CREDENCIALES COMPROBADAS DE TU PROYECTO 'alinvnvzssapljnbcxzx'
+        // CREDENCIALES COMPROBADAS DE TU PROYECTO REAL 'alinvnvzssapljnbcxzx'
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_pS0eNKhfqJgViI-SDXXuIw_2fSqgst4"; 
         
@@ -221,8 +222,8 @@
         document.addEventListener("DOMContentLoaded", () => {
             console.log("DOM y librerías listos. Inicializando cliente...");
             
-            // Forzamos la creación del cliente AQUÍ adentro, asegurando que 'window.supabase' ya exista
             try {
+                // Forzamos la creación del cliente asegurando que la librería de internet ya bajó
                 if (window.supabase && window.supabase.createClient) {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     
@@ -230,71 +231,110 @@
                     cargarDatosDesdeSupabase();
                     conectarCanalRealtime();
                 } else {
-                    alert("🚨 ERROR CRÍTICO: La librería CDN de Supabase no se ha descargado de internet.");
+                    alert("🚨 ERROR: El navegador no pudo descargar la herramienta de Supabase.");
                 }
             } catch (e) {
-                alert("🚨 FALLO AL ARRANCAR EL CLIENTE: " + e.message);
+                alert("🚨 FALLO AL ARRANCAR CLIENTE: " + e.message);
             }
         });
-
         async function cargarDatosDesdeSupabase() {
-            // Descarga del partido único con protección frente a fallos
             try {
-                const { data: partido, error: errorPart } = await supabase
-                    .from('partido')
-                    .select('*')
-                    .eq('id', 1)
-                    .maybeSingle();
-
-                if (errorPart) {
-                    alert("❌ ERROR EN TABLA 'PARTIDO': " + errorPart.message);
-                } else if (!partido) {
-                    alert("⚠️ ALERTA: La tabla 'partido' no tiene el registro con ID 1.");
-                } else {
+                const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
+                if (partido) {
                     partidoInfo = {
-                        fechaTexto: partido.fecha || "-",
-                        horaTexto: partido.hora || "-",
-                        campo: partido.campo || "-",
-                        precio: partido.precio || "-",
-                        limite: partido.limite || 16,
-                        equiposGuardadosHTML: partido.equipos || ""
+                        fechaTexto: partido.fecha,
+                        horaTexto: partido.hora,
+                        campo: partido.campo,
+                        precio: partido.precio,
+                        limite: partido.limite,
+                        equiposGuardadosHTML: partido.equipos // Mapeado exacto según tu columna 'equipos'
                     };
                 }
-            } catch (err) {
-                console.error("Fallo asíncrono en partido:", err.message);
-            }
 
-            // Descarga de jugadores ordenada cronológicamente
-            try {
-                const { data: jugadores, error: errorJug } = await supabase
-                    .from('jugadores')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if (errorJug) {
-                    alert("❌ ERROR EN TABLA 'JUGADORES': " + errorJug.message);
-                } else if (jugadores) {
+                // Descargamos los jugadores ordenados cronológicamente por tu columna 'created_at'
+                const { data: jugadores } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
+                if (jugadores) {
                     listaJugadores = jugadores;
                 }
-            } catch (err) {
-                console.error("Fallo asíncrono en jugadores:", err.message);
-            }
 
-            renderizarTodo();
+                renderizarTodo();
+            } catch (err) {
+                console.error("Error al cargar datos de Supabase:", err.message);
+            }
         }
 
         function conectarCanalRealtime() {
-            try {
-                supabase
-                    .channel('pachanga-realtime')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'partido' }, () => cargarDatosDesdeSupabase())
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'jugadores' }, () => cargarDatosDesdeSupabase())
-                    .subscribe();
-            } catch(e) {
-                console.error("Error en WebSockets Realtime: ", e.message);
-            }
+            supabase
+                .channel('pachanga-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'partido' }, () => cargarDatosDesdeSupabase())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'jugadores' }, () => cargarDatosDesdeSupabase())
+                .subscribe();
         }
 
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO VISUAL Y CÁLCULOS
+        function renderizarTodo() {
+            document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
+            document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
+            document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
+            document.getElementById('disp-precio').innerText = partidoInfo.precio || "-";
+
+            if (isAdminAutenticado) {
+                document.getElementById('inp-fecha-texto').value = partidoInfo.fechaTexto || "";
+                document.getElementById('inp-hora-texto').value = partidoInfo.horaTexto || "";
+                document.getElementById('inp-campo').value = partidoInfo.campo || "";
+                document.getElementById('inp-precio').value = partidoInfo.precio || "";
+                document.getElementById('inp-limite').value = partidoInfo.limite || 16;
+            }
+
+            const maxRef = parseInt(partidoInfo.limite) || 16;
+            const titularesActuales = Math.min(listaJugadores.length, maxRef);
+            const plazasLibres = maxRef - titularesActuales;
+            const badgePlazas = document.getElementById('plazas-status');
+            
+            document.getElementById("titulo-titulares").innerText = `👥 Convocados Titulares (Máx. ${maxRef})`;
+
+            if (plazasLibres > 0) {
+                badgePlazas.innerText = `🟢 ¡Quedan ${plazasLibres} plazas disponibles!`;
+                badgePlazas.className = "counter-badge";
+            } else {
+                badgePlazas.innerText = `⚠️ ¡Cupo lleno! Siguiente inscrito irá a lista de espera.`;
+                badgePlazas.className = "counter-badge counter-full";
+            }
+                        
+            let precioExtraido = 0;
+            if (partidoInfo.precio && partidoInfo.precio !== "-") {
+                precioExtraido = parseFloat(partidoInfo.precio.toString().replace(/[^0-9.]/g, '')) || 0;
+            }
+            
+            const tUL = document.getElementById('lista-titulares');
+            const sUL = document.getElementById('lista-suplentes');
+            tUL.innerHTML = ""; sUL.innerHTML = "";
+
+            let totalRecaudado = 0;
+            let totalPendiente = 0;
+
+            listaJugadores.forEach((j, i) => {
+                const posicion = i + 1;
+                const esTitular = posicion <= maxRef;
+                const li = document.createElement('li');
+                li.className = esTitular ? "titular-row" : "suplente-row";
+                
+                if (esTitular) {
+                    if (j.pagado) totalRecaudado += precioExtraido;
+                    else totalPendiente += precioExtraido;
+                }
+
+                li.innerHTML = `
+                    <span><strong>${posicion}. ${j.nombre}</strong></span>
+                    <div class="player-actions">
+                        <span style="color:${j.pagado ? '#10b981':'#ef4444'}; font-weight:bold; font-size:0.9rem;">
+                            ${j.pagado ? '✅ Pagado' : '⏳ Pendiente'}
+                        </span>
+                    </div>
+                `;
+                
+                if (esTitular) tUL.appendChild(li); else sUL.appendChild(li);
+            });
             // ACTUALIZACIÓN DE CONTADORES DE LA CAJA ADMINISTRATIVA
             document.getElementById('caja-recaudado').innerText = totalRecaudado.toFixed(2) + "€";
             document.getElementById('caja-pendiente').innerText = totalPendiente.toFixed(2) + "€";
@@ -324,7 +364,7 @@
             } else {
                 box.style.display = 'none';
             }
-        // Cierre formal de la función renderizarTodo()
+        } // Cierre formal de la función renderizarTodo()
 
         // ACCIÓN: INSCRIPCIÓN PÚBLICA AUTOMÁTICA
         async function inscribirJugadorAutomatico() {
@@ -344,7 +384,7 @@
 
             const { error } = await supabase.from('jugadores').insert([{ nombre: nombre, pagado: false }]);
             if (error) {
-                alert("❌ Error: " + error.message);
+                alert("❌ Error al inscribir: " + error.message);
                 return;
             }
 
@@ -414,10 +454,8 @@
         async function reiniciarTodoElSistema() {
             if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
                 await supabase.from('jugadores').delete().neq('nombre', '');
-                
                 const resetPartido = { fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos: "" };
                 await supabase.from('partido').update(resetPartido).eq('id', 1);
-                
                 document.getElementById('resultado-equipos').style.display = 'none';
                 alert("¡Sistema reseteado por completo! Todo ha quedado a cero con límite de 16.");
             }
@@ -474,12 +512,12 @@
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚫ NEGRO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
             `;
+            box.innerHTML = htmlEquipos; // Asegura render local inmediato en pantalla
             eqB.forEach((p, idx) => {
                 htmlEquipos += `<div style="background:#090d16; color:#f8fafc; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border:1px solid #334155; border-left:4px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${idx+1}. ${p}</div>`;
             });
             htmlEquipos += `</div></div></div>`;
             
-            // Actualización corregida apuntando exactamente a tu columna 'equipos'
             await supabase.from('partido').update({ equipos: htmlEquipos }).eq('id', 1);
 
             const box = document.getElementById('resultado-equipos');

@@ -199,13 +199,12 @@
     <!-- CARGA EL SDK OFICIAL DE SUPABASE -->
     <script src="https://jsdelivr.net"></script>
     <script>
-        // CONFIGURACIÓN PROYECTO REAL CON TU PROYECTO 'alinvnvzssapljnbcxzx'
+        // CONFIGURACIÓN DE TU PROYECTO REAL 'alinvnvzssapljnbcxzx'
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsaW52bnZ6c3NhcGxqbmNieHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjkxNTcsImV4cCI6MjEwMjg0NTE1N30.O0QCRnyZzrNWXH8Lio7Edqe_9_OshubHM_TlwnvAwMc";
         
-        // REEMPLÁZALA EXACTAMENTE POR ESTA OTRA:
+        // Uso de window para asegurar una inicialización limpia sin conflictos
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 
         const PASSWORD_CORRECTA = "klk830"; 
         let isAdminAutenticado = false;
@@ -221,34 +220,33 @@
 
         let listaJugadores = [];
 
-        // ESCUCHADORES INICIALES Y TIEMPO REAL
+        // ESCUCHADORES INICIALES Y TIEMPO REAL NATIVO
         document.addEventListener("DOMContentLoaded", () => {
             cargarDatosDesdeSupabase();
             conectarCanalRealtime();
         });
 
-        // MODIFICA ESTA FUNCIÓN EN TU PARTE 3:
-async function cargarDatosDesdeSupabase() {
-    const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
-    if (partido) {
-        partidoInfo = {
-            fechaTexto: partido.fecha,
-            horaTexto: partido.hora,
-            campo: partido.campo,
-            precio: partido.precio,
-            limite: partido.limite,
-            equiposGuardadosHTML: partido.equipos // <-- CAMBIADO AQUÍ (Antes ponía partido.equipos_generados)
-        };
-    }
+        async function cargarDatosDesdeSupabase() {
+            const { data: partido } = await supabase.from('partido').select('*').eq('id', 1).single();
+            if (partido) {
+                partidoInfo = {
+                    fechaTexto: partido.fecha,
+                    horaTexto: partido.hora,
+                    campo: partido.campo,
+                    precio: partido.precio,
+                    limite: partido.limite,
+                    equiposGuardadosHTML: partido.equipos // Mapeado exacto según tu columna 'equipos'
+                };
+            }
 
-    const { data: jugadores } = await supabase.from('jugadores').select('*').order('creado_en', { ascending: true });
-    if (jugadores) {
-        listaJugadores = jugadores;
-    }
+            // Descargamos los jugadores ordenados por la columna 'created_at' de tu esquema
+            const { data: jugadores } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
+            if (jugadores) {
+                listaJugadores = jugadores;
+            }
 
-    renderizarTodo();
-}
-
+            renderizarTodo();
+        }
 
         function conectarCanalRealtime() {
             supabase
@@ -258,7 +256,7 @@ async function cargarDatosDesdeSupabase() {
                 .subscribe();
         }
 
-        // FUNCIÓN PRINCIPAL DE RENDERIZADO VISUAL
+        // FUNCIÓN PRINCIPAL DE RENDERIZADO VISUAL Y CÁLCULOS
         function renderizarTodo() {
             document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
             document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
@@ -443,7 +441,8 @@ async function cargarDatosDesdeSupabase() {
             if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
                 await supabase.from('jugadores').delete().neq('nombre', '');
                 
-                const resetPartido = { fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos_generados: "" };
+                // Mapeado exacto a tu columna 'equipos'
+                const resetPartido = { fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos: "" };
                 await supabase.from('partido').update(resetPartido).eq('id', 1);
                 
                 document.getElementById('resultado-equipos').style.display = 'none';
@@ -502,16 +501,17 @@ async function cargarDatosDesdeSupabase() {
                         <div style="text-align:center; font-weight:bold; margin-bottom:8px; color:#f8fafc; font-size:0.9rem;">⚫ NEGRO</div>
                         <div style="display:flex; flex-direction:column; gap:6px;">
             `;
+            box.innerHTML = htmlEquipos; // Asegura render local inmediato en pantalla
             eqB.forEach((p, idx) => {
                 htmlEquipos += `<div style="background:#090d16; color:#f8fafc; padding:10px; border-radius:6px; font-size:0.9rem; text-align:center; font-weight:bold; border:1px solid #334155; border-left:4px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${idx+1}. ${p}</div>`;
             });
             htmlEquipos += `</div></div></div>`;
             
-            await supabase.from('partido').update({ equipos_generados: htmlEquipos }).eq('id', 1);
+            // Actualización corregida apuntando exactamente a la columna 'equipos'
+            await supabase.from('partido').update({ equipos: htmlEquipos }).eq('id', 1);
 
             const box = document.getElementById('resultado-equipos');
             if (box) { box.scrollIntoView({ behavior: 'smooth' }); }
         }
     </script>
 </body>
-</html>

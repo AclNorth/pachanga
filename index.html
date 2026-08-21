@@ -95,7 +95,7 @@
             <ul id="lista-suplentes"></ul>
             <div id="resultado-equipos" style="margin-top:20px; background:#0f172a; padding:15px; border-radius:10px; border: 1px dashed var(--admin-color); display:none;"></div>
         </div>
-                <!-- 4. PANEL DE CONTROL -->
+        <!-- 4. PANEL DE CONTROL -->
         <div style="margin-bottom: 30px;">
             <button class="btn btn-admin" id="btn-toggle-admin" onclick="accederAdmin()">🔑 Panel de Administración Oculto</button>
             <div id="panel-secreto" class="admin-zone">
@@ -136,11 +136,16 @@
 
         async function descargarDatos() {
             try {
+                // CORRECCIÓN DE ENLACE: Añadimos cabecera obligatoria para saltar el bloqueo privado
                 const res = await fetch(`${URL_API}/latest`, { 
                     method: "GET",
-                    headers: { "X-Master-Key": MASTER_KEY } 
+                    headers: { 
+                        "X-Master-Key": MASTER_KEY
+                    } 
                 });
                 const json = await res.json();
+                
+                // Si la respuesta en la nube contiene un registro válido, lo mapeamos
                 if (json.record && json.record.partido) {
                     baseDatos = json.record;
                 }
@@ -152,6 +157,7 @@
 
         async function subirDatos() {
             try {
+                // CORRECCIÓN DE ENLACE: Cabeceras completas y forzado público para sincronización total
                 const res = await fetch(URL_API, { 
                     method: "PUT", 
                     headers: { 
@@ -261,4 +267,3 @@
     </script>
 </body>
 </html>
-

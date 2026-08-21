@@ -195,25 +195,15 @@
             </div>
         </div>
     </div> <!-- Cierre de container -->
-              <!-- CARGA EL SDK OFICIAL COMPLETO DE SUPABASE -->
+    <!-- CARGA EL SDK OFICIAL COMPLETO DE SUPABASE -->
     <script src="https://jsdelivr.net"></script>
     <script>
         // CREDENCIALES COMPROBADAS DE TU PROYECTO 'alinvnvzssapljnbcxzx'
         const SUPABASE_URL = "https://supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_pS0eNKhfqJgViI-SDXXuIw_2fSqgst4"; 
         
-        let supabase;
-        
-        // Verificación forzada de la librería de Supabase
-        try {
-            if (window.supabase && window.supabase.createClient) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                alert("🚨 ERROR CRÍTICO: La librería de Supabase no se cargó correctamente desde internet. Revisa tu conexión.");
-            }
-        } catch(e) {
-            alert("🚨 ERROR AL INICIALIZAR SUPABASE: " + e.message);
-        }
+        // Inicialización segura utilizando el objeto window para evitar bloqueos del navegador
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const PASSWORD_CORRECTA = "klk830"; 
         let isAdminAutenticado = false;
@@ -229,83 +219,47 @@
 
         let listaJugadores = [];
 
-        // ESCUCHADORES INICIALES CON DIAGNÓSTICO
+        // ESCUCHADORES INICIALES Y TIEMPO REAL NATIVO
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("DOM Cargado. Iniciando descargas...");
             cargarDatosDesdeSupabase();
             conectarCanalRealtime();
         });
 
         async function cargarDatosDesdeSupabase() {
-            console.log("Intentando conectar a las tablas de Supabase...");
-            
-            // 1. DESCARGA DEL PARTIDO CON CAPTURA DE ERROR PROTEGIDA
             try {
-                const { data: partido, error: errorPart } = await supabase
-                    .from('partido')
-                    .select('*')
-                    .eq('id', 1)
-                    .maybeSingle(); // Usamos maybeSingle para que no explote si la tabla está vacía
-
-                if (errorPart) {
-                    alert("❌ ERROR EN TABLA 'PARTIDO': " + errorPart.message + "\nCódigo: " + errorPart.code);
-                } else if (!partido) {
-                    alert("⚠️ ALERTA: La tabla 'partido' existe pero está vacía. Ve al SQL Editor y ejecuta el insert.");
-                } else {
+                const { data: partido, error: errorPart } = await supabase.from('partido').select('*').eq('id', 1).single();
+                if (partido) {
                     partidoInfo = {
-                        fechaTexto: partido.fecha || "-",
-                        horaTexto: partido.hora || "-",
-                        campo: partido.campo || "-",
-                        precio: partido.precio || "-",
-                        limite: partido.limite || 16,
-                        equiposGuardadosHTML: partido.equipos || ""
+                        fechaTexto: partido.fecha,
+                        horaTexto: partido.hora,
+                        campo: partido.campo,
+                        precio: partido.precio,
+                        limite: partido.limite,
+                        equiposGuardadosHTML: partido.equipos // Mapeado exacto según tu columna 'equipos'
                     };
                 }
-            } catch (err) {
-                alert("💥 FALLO CRÍTICO ASÍNCRONO EN PARTIDO: " + err.message);
-            }
 
-            // 2. DESCARGA DE JUGADORES CON CAPTURA DE ERROR PROTEGIDA
-            try {
-                const { data: jugadores, error: errorJug } = await supabase
-                    .from('jugadores')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if (errorJug) {
-                    alert("❌ ERROR EN TABLA 'JUGADORES': " + errorJug.message);
-                } else if (jugadores) {
+                // Descargamos los jugadores ordenados cronológicamente por tu columna 'created_at'
+                const { data: jugadores } = await supabase.from('jugadores').select('*').order('created_at', { ascending: true });
+                if (jugadores) {
                     listaJugadores = jugadores;
                 }
-            } catch (err) {
-                alert("💥 FALLO CRÍTICO ASÍNCRONO EN JUGADORES: " + err.message);
-            }
 
-            // Forzar el renderizado aunque falten datos para quitar el "Cargando plazas..."
-            console.log("Llamando a renderizar interfaz...");
-            renderizarTodo();
+                renderizarTodo();
+            } catch (err) {
+                console.error("Error al cargar datos de Supabase:", err.message);
+            }
         }
 
         function conectarCanalRealtime() {
-            try {
-                supabase
-                    .channel('pachanga-realtime')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'partido' }, () => cargarDatosDesdeSupabase())
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'jugadores' }, () => cargarDatosDesdeSupabase())
-                    .subscribe((status) => {
-                        console.log("Estado de la conexión Realtime: ", status);
-                    });
-            } catch(e) {
-                console.error("Error al conectar WebSockets Realtime: ", e.message);
-            }
+            supabase
+                .channel('pachanga-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'partido' }, () => cargarDatosDesdeSupabase())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'jugadores' }, () => cargarDatosDesdeSupabase())
+                .subscribe();
         }
-
         // FUNCIÓN PRINCIPAL DE RENDERIZADO VISUAL Y CÁLCULOS
         function renderizarTodo() {
-            // Elimina de forma forzada el estado de congelación pase lo que pase
-            const badgePlazas = document.getElementById('plazas-status');
-            if (!badgePlazas) return;
-
             document.getElementById('disp-fecha').innerText = partidoInfo.fechaTexto || "-";
             document.getElementById('disp-hora').innerText = partidoInfo.horaTexto || "-";
             document.getElementById('disp-campo').innerText = partidoInfo.campo || "-";
@@ -322,6 +276,7 @@
             const maxRef = parseInt(partidoInfo.limite) || 16;
             const titularesActuales = Math.min(listaJugadores.length, maxRef);
             const plazasLibres = maxRef - titularesActuales;
+            const badgePlazas = document.getElementById('plazas-status');
             
             document.getElementById("titulo-titulares").innerText = `👥 Convocados Titulares (Máx. ${maxRef})`;
 
@@ -349,7 +304,6 @@
                 const posicion = i + 1;
                 const esTitular = posicion <= maxRef;
                 const li = document.createElement('li');
-                
                 li.className = esTitular ? "titular-row" : "suplente-row";
                 
                 if (esTitular) {
@@ -369,13 +323,10 @@
                 if (esTitular) tUL.appendChild(li); else sUL.appendChild(li);
             });
 
-
-            // ACTUALIZACIÓN DE CONTADORES DE LA CAJA ADMINISTRATIVA
             document.getElementById('caja-recaudado').innerText = totalRecaudado.toFixed(2) + "€";
             document.getElementById('caja-pendiente').innerText = totalPendiente.toFixed(2) + "€";
             document.getElementById('caja-total').innerText = (totalRecaudado + totalPendiente).toFixed(2) + "€";
 
-            // LISTA DE ADMINISTRACIÓN DE JUGADORES
             const adminUL = document.getElementById('admin-lista-jugadores');
             adminUL.innerHTML = "";
             listaJugadores.forEach((j, i) => {
@@ -400,7 +351,6 @@
                 box.style.display = 'none';
             }
         } // Cierre formal de la función renderizarTodo()
-
         // ACCIÓN: INSCRIPCIÓN PÚBLICA AUTOMÁTICA
         async function inscribirJugadorAutomatico() {
             const inputNombre = document.getElementById('nombre-jugador-nuevo');
@@ -419,7 +369,7 @@
 
             const { error } = await supabase.from('jugadores').insert([{ nombre: nombre, pagado: false }]);
             if (error) {
-                alert("❌ Error: " + error.message);
+                alert("❌ Error al inscribir: " + error.message);
                 return;
             }
 
@@ -489,10 +439,8 @@
         async function reiniciarTodoElSistema() {
             if(confirm("🚨 ¿Seguro que quieres borrar TODO? Se vaciarán los campos de texto, la lista de jugadores y la caja por completo.")) {
                 await supabase.from('jugadores').delete().neq('nombre', '');
-                
                 const resetPartido = { fecha: "", hora: "", campo: "", precio: "", limite: 16, equipos: "" };
                 await supabase.from('partido').update(resetPartido).eq('id', 1);
-                
                 document.getElementById('resultado-equipos').style.display = 'none';
                 alert("¡Sistema reseteado por completo! Todo ha quedado a cero con límite de 16.");
             }
@@ -554,7 +502,6 @@
             });
             htmlEquipos += `</div></div></div>`;
             
-            // Actualización corregida apuntando exactamente a tu columna 'equipos'
             await supabase.from('partido').update({ equipos: htmlEquipos }).eq('id', 1);
 
             const box = document.getElementById('resultado-equipos');
